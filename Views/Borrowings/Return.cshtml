@@ -1,0 +1,31 @@
+﻿@model LibraryManagementSystem.Models.Borrowing
+
+@{
+    ViewData["Title"] = "Return Book";
+    var isLate = DateTime.Today > Model.DueDate.Date;
+    var daysLate = isLate ? (DateTime.Today - Model.DueDate.Date).Days : 0;
+}
+
+<h1>Return Book</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Book</dt>
+    <dd class="col-sm-9">@Model.Book?.Title</dd>
+    <dt class="col-sm-3">Member</dt>
+    <dd class="col-sm-9">@Model.Member?.FullName</dd>
+    <dt class="col-sm-3">Due Date</dt>
+    <dd class="col-sm-9">@Model.DueDate.ToShortDateString()</dd>
+</dl>
+
+@if (isLate)
+{
+    <div class="alert alert-warning">
+        This book is @daysLate day(s) overdue. A fine of @(daysLate * 10) will be recorded automatically.
+    </div>
+}
+
+<form asp-action="Return" method="post">
+    <input type="hidden" asp-for="BorrowingId" />
+    <button type="submit" class="btn btn-success">Confirm Return</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

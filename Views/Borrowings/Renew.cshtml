@@ -1,0 +1,24 @@
+﻿@model LibraryManagementSystem.Models.Borrowing
+
+@{
+    ViewData["Title"] = "Renew Book";
+}
+
+<h1>Renew Book</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Book</dt>
+    <dd class="col-sm-9">@Model.Book?.Title</dd>
+    <dt class="col-sm-3">Member</dt>
+    <dd class="col-sm-9">@Model.Member?.FullName</dd>
+    <dt class="col-sm-3">Current Due Date</dt>
+    <dd class="col-sm-9">@Model.DueDate.ToShortDateString()</dd>
+    <dt class="col-sm-3">New Due Date (if renewed)</dt>
+    <dd class="col-sm-9">@Model.DueDate.AddDays(7).ToShortDateString()</dd>
+</dl>
+
+<form asp-action="Renew" method="post">
+    <input type="hidden" asp-for="BorrowingId" />
+    <button type="submit" class="btn btn-primary">Confirm Renew (+7 days)</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

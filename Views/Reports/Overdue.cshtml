@@ -1,0 +1,33 @@
+﻿@model IEnumerable<LibraryManagementSystem.Models.Borrowing>
+
+@{
+    ViewData["Title"] = "Overdue Books Report";
+}
+
+<h1>Overdue Books Report</h1>
+<p>Total overdue: @Model.Count()</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Book</th>
+            <th>Member</th>
+            <th>Due Date</th>
+            <th>Days Overdue</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var daysOverdue = (DateTime.Today - item.DueDate.Date).Days;
+            <tr class="table-danger">
+                <td>@item.Book?.Title</td>
+                <td>@item.Member?.FullName</td>
+                <td>@item.DueDate.ToShortDateString()</td>
+                <td>@daysOverdue</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index">Back to Reports</a>

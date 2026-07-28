@@ -1,0 +1,22 @@
+﻿@model LibraryManagementSystem.Models.Fine
+
+@{
+    ViewData["Title"] = "Record Fine Payment";
+}
+
+<h1>Record Fine Payment</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Member</dt>
+    <dd class="col-sm-9">@Model.Borrowing?.Member?.FullName</dd>
+    <dt class="col-sm-3">Book</dt>
+    <dd class="col-sm-9">@Model.Borrowing?.Book?.Title</dd>
+    <dt class="col-sm-3">Amount</dt>
+    <dd class="col-sm-9">@Model.Amount</dd>
+</dl>
+
+<form asp-action="Pay" method="post">
+    <input type="hidden" asp-for="FineId" />
+    <button type="submit" class="btn btn-success">Confirm Payment Received</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

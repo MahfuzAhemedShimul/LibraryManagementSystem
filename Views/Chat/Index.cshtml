@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "Library Assistant";
+}
+
+<h1>Library Assistant</h1>
+<p>Ask me about books, borrowing, or how to use the library system.</p>
+
+<div id="chatBox" style="border:1px solid #ccc; border-radius:8px; padding:15px; height:400px; overflow-y:auto; background:#f8f9fa;"></div>
+
+<div class="input-group mt-3">
+    <input type="text" id="userInput" class="form-control" placeholder="Type your question..." />
+    <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+</div>
+
+@section Scripts {
+    <script>
+        function appendMessage(sender, text) {
+            const chatBox = document.getElementById('chatBox');
+            const msg = document.createElement('div');
+            msg.className = 'mb-2';
+            msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const inputBox = document.getElementById('userInput');
+            const message = inputBox.value.trim();
+            if (!message) return;
+
+            appendMessage('You', message);
+            inputBox.value = '';
+
+            appendMessage('Assistant', '...typing');
+
+            const response = await fetch('/Chat/Ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await response.json();
+
+            const chatBox = document.getElementById('chatBox');
+            chatBox.lastChild.innerHTML = `<strong>Assistant:</strong> ${data.reply}`;
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+}

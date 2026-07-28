@@ -1,0 +1,38 @@
+﻿@model IEnumerable<LibraryManagementSystem.Models.Fine>
+
+@{
+    ViewData["Title"] = "Fines";
+}
+
+<h1>Fines</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Book</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Paid Date</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Borrowing?.Member?.FullName</td>
+                <td>@item.Borrowing?.Book?.Title</td>
+                <td>@item.Amount</td>
+                <td>@(item.IsPaid ? "Paid" : "Unpaid")</td>
+                <td>@(item.PaidDate.HasValue ? item.PaidDate.Value.ToShortDateString() : "-")</td>
+                <td>
+                    @if (!item.IsPaid)
+                    {
+                        <a asp-action="Pay" asp-route-id="@item.FineId" class="btn btn-sm btn-success">Mark as Paid</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
