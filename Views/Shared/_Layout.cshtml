@@ -52,6 +52,9 @@
                         @if (User.IsInRole("Member"))
                         {
                             <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Borrowings" asp-action="MyBorrowings">My Borrowings</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Purchases" asp-action="MyPurchases">My Purchases</a>
                             </li>
                         }
