@@ -20,7 +20,7 @@
 @if (isLate)
 {
     <div class="alert alert-warning">
-        This book is @daysLate day(s) overdue. A fine of @(daysLate * 10) will be recorded automatically.
+        This book is @daysLate day(s) overdue. A fine of @("৳" + (daysLate * 10).ToString("N2")) will be recorded automatically.
     </div>
 }
 

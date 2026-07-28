@@ -13,6 +13,7 @@
     <dd class="col-sm-9">@Model.Borrowing?.Book?.Title</dd>
     <dt class="col-sm-3">Amount</dt>
     <dd class="col-sm-9">@Model.Amount</dd>
+    <dd class="col-sm-9">@("৳" + Model.Amount.ToString("N2"))</dd>
 </dl>
 
 <form asp-action="Pay" method="post">

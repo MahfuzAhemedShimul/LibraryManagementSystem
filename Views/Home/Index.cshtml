@@ -44,7 +44,7 @@
             <div class="card text-white bg-warning">
                 <div class="card-body">
                     <h5 class="card-title">Unpaid Fines Total</h5>
-                    <p class="card-text display-6">@(((decimal)ViewBag.UnpaidFinesTotal).ToString("C"))</p>
+                    <p class="card-text display-6">@("৳" + ((decimal)ViewBag.UnpaidFinesTotal).ToString("N2"))</p>
                 </div>
             </div>
         </div>

@@ -25,6 +25,7 @@
                 <td>@item.Borrowing?.Book?.Title</td>
                 <td>@item.Amount</td>
                 <td>@(item.IsPaid ? "Paid" : "Unpaid")</td>
+                <td>@("৳" + item.Amount.ToString("N2"))</td>
                 <td>@(item.PaidDate.HasValue ? item.PaidDate.Value.ToShortDateString() : "-")</td>
                 <td>
                     @if (!item.IsPaid)

@@ -1,3 +1,52 @@
+:root {
+    --lib-primary: #2c3e50;
+    --lib-accent: #d4a017;
+    --lib-light: #f8f9fa;
+}
+
+body {
+    background-color: var(--lib-light);
+}
+
+.navbar {
+    border-bottom: 3px solid var(--lib-primary) !important;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    color: var(--lib-primary) !important;
+}
+
+.btn-primary {
+    background-color: var(--lib-primary);
+    border-color: var(--lib-primary);
+}
+
+    .btn-primary:hover {
+        background-color: #1a252f;
+        border-color: #1a252f;
+    }
+
+.card {
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border-radius: 10px;
+}
+
+.table {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.footer {
+    background-color: var(--lib-primary);
+    color: white !important;
+}
+
+    .footer a {
+        color: #d4a017 !important;
+}
 html {
   font-size: 14px;
 }

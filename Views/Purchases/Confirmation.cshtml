@@ -12,7 +12,7 @@
     <dt class="col-sm-3">Book</dt>
     <dd class="col-sm-9">@Model.Book?.Title</dd>
     <dt class="col-sm-3">Price Paid</dt>
-    <dd class="col-sm-9">@Model.PricePaid.ToString("C")</dd>
+    <dd class="col-sm-9">@("৳" + Model.PricePaid.ToString("N2"))</dd>
     <dt class="col-sm-3">Date</dt>
     <dd class="col-sm-9">@Model.PurchaseDate.ToShortDateString()</dd>
 </dl>

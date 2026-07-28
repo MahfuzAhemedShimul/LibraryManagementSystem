@@ -19,7 +19,7 @@
         {
             <tr>
                 <td>@item.Book?.Title</td>
-                <td>@item.PricePaid.ToString("C")</td>
+                <td>@("৳" + item.PricePaid.ToString("N2"))</td>
                 <td>@item.PurchaseDate.ToShortDateString()</td>
             </tr>
         }
