@@ -1,0 +1,27 @@
+﻿@model IEnumerable<LibraryManagementSystem.Models.Purchase>
+
+@{
+    ViewData["Title"] = "My Purchases";
+}
+
+<h1>My Purchases</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Book</th>
+            <th>Price Paid</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Book?.Title</td>
+                <td>@item.PricePaid.ToString("C")</td>
+                <td>@item.PurchaseDate.ToShortDateString()</td>
+            </tr>
+        }
+    </tbody>
+</table>

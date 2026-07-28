@@ -1,0 +1,27 @@
+﻿@model LibraryManagementSystem.Models.Book
+
+@{
+    ViewData["Title"] = "Buy Book";
+}
+
+<h1>Buy Book</h1>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">Title</dt>
+    <dd class="col-sm-9">@Model.Title</dd>
+    <dt class="col-sm-3">Author</dt>
+    <dd class="col-sm-9">@Model.Author?.Name</dd>
+    <dt class="col-sm-3">Price</dt>
+    <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+</dl>
+
+<form asp-action="Buy" method="post">
+    <input type="hidden" name="id" value="@Model.BookId" />
+    <button type="submit" class="btn btn-success">Confirm Purchase</button>
+    <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.BookId" class="btn btn-secondary">Cancel</a>
+</form>

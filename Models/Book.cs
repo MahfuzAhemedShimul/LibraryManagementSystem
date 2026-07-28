@@ -18,5 +18,8 @@ namespace LibraryManagementSystem.Models
         public string ISBN { get; set; } = string.Empty;
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal Price { get; set; }
     }
 }

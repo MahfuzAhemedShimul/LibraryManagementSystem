@@ -17,6 +17,7 @@ namespace LibraryManagementSystem.Data
         public DbSet<Book> Books { get; set; }
         public DbSet<Borrowing> Borrowings { get; set; }
         public DbSet<Fine> Fines { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -38,6 +39,11 @@ namespace LibraryManagementSystem.Data
             // Set precision for the fine amount to avoid silent truncation
             builder.Entity<Fine>()
                 .Property(f => f.Amount)
+                .HasPrecision(10, 2);
+
+            // Set precision for the purchase price paid
+            builder.Entity<Purchase>()
+                .Property(p => p.PricePaid)
                 .HasPrecision(10, 2);
         }
     }

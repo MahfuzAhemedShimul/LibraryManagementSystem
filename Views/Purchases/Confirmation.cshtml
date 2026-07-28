@@ -1,0 +1,20 @@
+﻿@model LibraryManagementSystem.Models.Purchase
+
+@{
+    ViewData["Title"] = "Purchase Confirmation";
+}
+
+<h1>Purchase Successful!</h1>
+
+<div class="alert alert-success">Thank you for your purchase.</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Book</dt>
+    <dd class="col-sm-9">@Model.Book?.Title</dd>
+    <dt class="col-sm-3">Price Paid</dt>
+    <dd class="col-sm-9">@Model.PricePaid.ToString("C")</dd>
+    <dt class="col-sm-3">Date</dt>
+    <dd class="col-sm-9">@Model.PurchaseDate.ToShortDateString()</dd>
+</dl>
+
+<a asp-action="MyPurchases" class="btn btn-primary">View My Purchases</a>
