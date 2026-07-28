@@ -1,13 +1,51 @@
+using LibraryManagementSystem.Data;
 using LibraryManagementSystem.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace LibraryManagementSystem.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
+            _context = context;
+            _userManager = userManager;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Staff"))
+                {
+                    ViewBag.TotalBooks = await _context.Books.CountAsync();
+                    ViewBag.TotalMembers = (await _userManager.GetUsersInRoleAsync("Member")).Count;
+                    ViewBag.ActiveBorrowings = await _context.Borrowings.CountAsync(b => b.Status == "Borrowed");
+                    ViewBag.OverdueCount = await _context.Borrowings.CountAsync(b => b.Status == "Borrowed" && b.DueDate.Date < DateTime.Today);
+                    ViewBag.UnpaidFinesTotal = await _context.Fines.Where(f => !f.IsPaid).SumAsync(f => (decimal?)f.Amount) ?? 0;
+                }
+                else if (User.IsInRole("Member"))
+                {
+                    var memberId = _userManager.GetUserId(User);
+
+                    ViewBag.MyActiveBorrowings = await _context.Borrowings
+                        .Include(b => b.Book)
+                        .Where(b => b.MemberId == memberId && b.Status == "Borrowed")
+                        .ToListAsync();
+
+                    ViewBag.MyUnpaidFines = await _context.Fines
+                        .Include(f => f.Borrowing).ThenInclude(b => b.Book)
+                        .Where(f => !f.IsPaid && f.Borrowing.MemberId == memberId)
+                        .ToListAsync();
+                }
+            }
+
             return View();
         }
 

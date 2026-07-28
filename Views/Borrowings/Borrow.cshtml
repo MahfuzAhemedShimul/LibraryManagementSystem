@@ -1,0 +1,27 @@
+﻿@model LibraryManagementSystem.Models.Book
+
+@{
+    ViewData["Title"] = "Borrow Book";
+}
+
+<h1>Borrow Book</h1>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">Title</dt>
+    <dd class="col-sm-9">@Model.Title</dd>
+    <dt class="col-sm-3">Author</dt>
+    <dd class="col-sm-9">@Model.Author?.Name</dd>
+    <dt class="col-sm-3">Due Date (if borrowed today)</dt>
+    <dd class="col-sm-9">@DateTime.Today.AddDays(14).ToShortDateString()</dd>
+</dl>
+
+<form asp-action="Borrow" method="post">
+    <input type="hidden" name="id" value="@Model.BookId" />
+    <button type="submit" class="btn btn-primary">Confirm Borrow</button>
+    <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.BookId" class="btn btn-secondary">Cancel</a>
+</form>

@@ -11,16 +11,32 @@
     <p><a asp-action="Create" class="btn btn-primary">Add New Book</a></p>
 }
 
+@if (User.Identity == null || !User.Identity.IsAuthenticated)
+{
+    <div class="alert alert-info">
+        You need to be a registered member to buy or borrow a book.
+        <a asp-controller="Account" asp-action="Register">Register here</a> or
+        <a asp-controller="Account" asp-action="Login">log in</a> if you already have an account.
+    </div>
+}
+
 <table class="table">
     <thead>
         <tr>
             <th>Title</th>
             <th>Author</th>
             <th>Category</th>
-            <th>ISBN</th>
-            <th>Total Copies</th>
-            <th>Available Copies</th>
-            <th></th>
+            @if (User.IsInRole("Staff"))
+            {
+                <th>ISBN</th>
+                <th>Total Copies</th>
+                <th>Available Copies</th>
+            }
+            <th>Price</th>
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <th></th>
+            }
         </tr>
     </thead>
     <tbody>
@@ -30,20 +46,37 @@
                 <td>@item.Title</td>
                 <td>@item.Author?.Name</td>
                 <td>@item.Category?.Name</td>
-                <td>@item.ISBN</td>
-                <td>@item.TotalCopies</td>
-                <td>@item.AvailableCopies</td>
-                <td>
-                    @if (User.IsInRole("Staff"))
-                    {
-                        <a asp-action="Edit" asp-route-id="@item.BookId" class="btn btn-sm btn-secondary">Edit</a>
-                    }
-                    <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
-                    @if (User.IsInRole("Staff"))
-                    {
-                        <a asp-action="Delete" asp-route-id="@item.BookId" class="btn btn-sm btn-danger">Delete</a>
-                    }
-                </td>
+                @if (User.IsInRole("Staff"))
+                {
+                    <td>@item.ISBN</td>
+                    <td>@item.TotalCopies</td>
+                    <td>@item.AvailableCopies</td>
+                }
+                <td>@item.Price.ToString("C")</td>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <td>
+                        @if (User.IsInRole("Staff"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@item.BookId" class="btn btn-sm btn-secondary">Edit</a>
+                            <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
+                            <a asp-action="Delete" asp-route-id="@item.BookId" class="btn btn-sm btn-danger">Delete</a>
+                        }
+                        @if (User.IsInRole("Member"))
+                        {
+                            <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
+                            @if (item.AvailableCopies > 0)
+                            {
+                                <a asp-controller="Borrowings" asp-action="Borrow" asp-route-id="@item.BookId" class="btn btn-sm btn-primary">Borrow</a>
+                                <a asp-controller="Purchases" asp-action="Buy" asp-route-id="@item.BookId" class="btn btn-sm btn-success">Buy</a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-secondary" disabled>Out of Stock</button>
+                            }
+                        }
+                    </td>
+                }
             </tr>
         }
     </tbody>

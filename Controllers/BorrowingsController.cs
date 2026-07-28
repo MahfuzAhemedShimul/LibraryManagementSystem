@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementSystem.Controllers
 {
-    [Authorize(Roles = "Staff")]
+    [Authorize]
     public class BorrowingsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,7 +21,8 @@ namespace LibraryManagementSystem.Controllers
             _userManager = userManager;
         }
 
-        // GET: Borrowings  (list all active + past borrowings)
+        // GET: Borrowings  (Staff only — list all active + past borrowings)
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> Index()
         {
             var borrowings = await _context.Borrowings
@@ -33,15 +34,17 @@ namespace LibraryManagementSystem.Controllers
             return View(borrowings);
         }
 
-        // GET: Borrowings/Issue
+        // GET: Borrowings/Issue (Staff only)
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> Issue()
         {
             await PopulateDropdowns();
             return View(new IssueBookViewModel());
         }
 
-        // POST: Borrowings/Issue
+        // POST: Borrowings/Issue (Staff only)
         [HttpPost]
+        [Authorize(Roles = "Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Issue(IssueBookViewModel model)
         {
@@ -82,7 +85,80 @@ namespace LibraryManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Borrowings/Return/5
+        // GET: Borrowings/Borrow/5  (Member self-service)
+        [Authorize(Roles = "Member")]
+        public async Task<IActionResult> Borrow(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var book = await _context.Books
+                .Include(b => b.Author)
+                .FirstOrDefaultAsync(b => b.BookId == id);
+
+            if (book == null) return NotFound();
+
+            if (book.AvailableCopies <= 0)
+            {
+                TempData["Error"] = "Sorry, this book is currently out of stock.";
+                return RedirectToAction("Details", "Books", new { id });
+            }
+
+            return View(book);
+        }
+
+        // POST: Borrowings/Borrow/5  (Member self-service)
+        [HttpPost, ActionName("Borrow")]
+        [Authorize(Roles = "Member")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BorrowConfirmed(int id)
+        {
+            var book = await _context.Books.FindAsync(id);
+            if (book == null) return NotFound();
+
+            if (book.AvailableCopies <= 0)
+            {
+                TempData["Error"] = "Sorry, this book is currently out of stock.";
+                return RedirectToAction("Details", "Books", new { id });
+            }
+
+            var memberId = _userManager.GetUserId(User);
+
+            var borrowing = new Borrowing
+            {
+                BookId = book.BookId,
+                MemberId = memberId!,
+                IssuedByStaffId = null, // self-service, no staff involved
+                IssueDate = DateTime.Today,
+                DueDate = DateTime.Today.AddDays(14),
+                Status = "Borrowed"
+            };
+
+            book.AvailableCopies -= 1;
+
+            _context.Borrowings.Add(borrowing);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"You've successfully borrowed \"{book.Title}\". Due back on {borrowing.DueDate.ToShortDateString()}.";
+            return RedirectToAction("MyBorrowings");
+        }
+
+        // GET: Borrowings/MyBorrowings (Member's own borrowing list)
+        [Authorize(Roles = "Member")]
+        public async Task<IActionResult> MyBorrowings()
+        {
+            var memberId = _userManager.GetUserId(User);
+
+            var borrowings = await _context.Borrowings
+                .Include(b => b.Book)
+                .Where(b => b.MemberId == memberId)
+                .OrderByDescending(b => b.IssueDate)
+                .ToListAsync();
+
+            return View(borrowings);
+        }
+
+        // GET: Borrowings/Return/5 (Staff only)
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> Return(int? id)
         {
             if (id == null) return NotFound();
@@ -98,8 +174,9 @@ namespace LibraryManagementSystem.Controllers
             return View(borrowing);
         }
 
-        // POST: Borrowings/Return/5
+        // POST: Borrowings/Return/5 (Staff only)
         [HttpPost, ActionName("Return")]
+        [Authorize(Roles = "Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReturnConfirmed(int id)
         {
@@ -111,9 +188,8 @@ namespace LibraryManagementSystem.Controllers
 
             borrowing.ReturnDate = DateTime.Today;
             borrowing.Status = "Returned";
-            borrowing.Book.AvailableCopies += 1;
+            borrowing.Book!.AvailableCopies += 1;
 
-            // Flat-rate fine: 10 currency units per day overdue
             if (borrowing.ReturnDate > borrowing.DueDate)
             {
                 int daysLate = (borrowing.ReturnDate.Value.Date - borrowing.DueDate.Date).Days;
@@ -130,7 +206,8 @@ namespace LibraryManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Borrowings/Renew/5
+        // GET: Borrowings/Renew/5 (Staff only)
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> Renew(int? id)
         {
             if (id == null) return NotFound();
@@ -145,8 +222,9 @@ namespace LibraryManagementSystem.Controllers
             return View(borrowing);
         }
 
-        // POST: Borrowings/Renew/5
+        // POST: Borrowings/Renew/5 (Staff only)
         [HttpPost, ActionName("Renew")]
+        [Authorize(Roles = "Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RenewConfirmed(int id)
         {
@@ -155,7 +233,7 @@ namespace LibraryManagementSystem.Controllers
 
             if (borrowing.Status != "Returned")
             {
-                borrowing.DueDate = borrowing.DueDate.AddDays(7); // extend by 7 days
+                borrowing.DueDate = borrowing.DueDate.AddDays(7);
                 await _context.SaveChangesAsync();
             }
 

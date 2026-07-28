@@ -1,0 +1,37 @@
+﻿@model IEnumerable<LibraryManagementSystem.Models.Borrowing>
+
+@{
+    ViewData["Title"] = "My Borrowings";
+}
+
+<h1>My Borrowings</h1>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Book</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var isOverdue = item.Status == "Borrowed" && item.DueDate.Date < DateTime.Today;
+            <tr class="@(isOverdue ? "table-danger" : "")">
+                <td>@item.Book?.Title</td>
+                <td>@item.IssueDate.ToShortDateString()</td>
+                <td>@item.DueDate.ToShortDateString()</td>
+                <td>@(item.ReturnDate.HasValue ? item.ReturnDate.Value.ToShortDateString() : "-")</td>
+                <td>@(isOverdue ? "Overdue" : item.Status)</td>
+            </tr>
+        }
+    </tbody>
+</table>
