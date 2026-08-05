@@ -22,13 +22,19 @@ namespace LibraryManagementSystem.Controllers
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                if (User.IsInRole("Staff"))
+                if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
                 {
                     ViewBag.TotalBooks = await _context.Books.CountAsync();
                     ViewBag.TotalMembers = (await _userManager.GetUsersInRoleAsync("Member")).Count;
                     ViewBag.ActiveBorrowings = await _context.Borrowings.CountAsync(b => b.Status == "Borrowed");
                     ViewBag.OverdueCount = await _context.Borrowings.CountAsync(b => b.Status == "Borrowed" && b.DueDate.Date < DateTime.Today);
                     ViewBag.UnpaidFinesTotal = await _context.Fines.Where(f => !f.IsPaid).SumAsync(f => (decimal?)f.Amount) ?? 0;
+                    ViewBag.PendingRequestsCount = await _context.Borrowings.CountAsync(b => b.Status == "Requested");
+                }
+                else if (User.IsInRole("Staff"))
+                {
+                    ViewBag.PendingRequestsCount = await _context.Borrowings.CountAsync(b => b.Status == "Requested");
+                    ViewBag.UnpaidFinesCount = await _context.Fines.CountAsync(f => !f.IsPaid);
                 }
                 else if (User.IsInRole("Member"))
                 {
@@ -37,6 +43,11 @@ namespace LibraryManagementSystem.Controllers
                     ViewBag.MyActiveBorrowings = await _context.Borrowings
                         .Include(b => b.Book)
                         .Where(b => b.MemberId == memberId && b.Status == "Borrowed")
+                        .ToListAsync();
+
+                    ViewBag.MyPendingRequests = await _context.Borrowings
+                        .Include(b => b.Book)
+                        .Where(b => b.MemberId == memberId && b.Status == "Requested")
                         .ToListAsync();
 
                     ViewBag.MyUnpaidFines = await _context.Fines

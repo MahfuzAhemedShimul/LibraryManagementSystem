@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementSystem.Controllers
 {
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles = "Admin,Librarian,Staff")]
     public class FinesController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -19,11 +19,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 var app = builder.Build();
 
-// Seed Staff and Member roles on startup
+// Seed Admin, Librarian, Staff, and Member roles on startup
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    string[] roles = { "Staff", "Member" };
+    string[] roles = { "Admin", "Librarian", "Staff", "Member" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))

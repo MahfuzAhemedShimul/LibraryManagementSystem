@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementSystem.Controllers
 {
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles = "Admin,Librarian")]
     public class MembersController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -47,8 +47,7 @@ namespace LibraryManagementSystem.Controllers
             var isMember = await _userManager.IsInRoleAsync(member, "Member");
             if (!isMember) return NotFound();
 
-            // Borrowing history for this member (Borrowing feature comes next,
-            // but this query is ready for when that table has data)
+            // Borrowing history for this member
             var borrowings = await _context.Borrowings
                 .Include(b => b.Book)
                 .Where(b => b.MemberId == id)

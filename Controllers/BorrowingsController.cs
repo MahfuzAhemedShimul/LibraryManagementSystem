@@ -21,8 +21,8 @@ namespace LibraryManagementSystem.Controllers
             _userManager = userManager;
         }
 
-        // GET: Borrowings  (Staff only — list all active + past borrowings)
-        [Authorize(Roles = "Staff")]
+        // GET: Borrowings (Admin/Librarian only — full history)
+        [Authorize(Roles = "Admin,Librarian")]
         public async Task<IActionResult> Index()
         {
             var borrowings = await _context.Borrowings
@@ -34,17 +34,78 @@ namespace LibraryManagementSystem.Controllers
             return View(borrowings);
         }
 
-        // GET: Borrowings/Issue (Staff only)
-        [Authorize(Roles = "Staff")]
+        // GET: Borrowings/PendingRequests (Admin/Librarian/Staff)
+        [Authorize(Roles = "Admin,Librarian,Staff")]
+        public async Task<IActionResult> PendingRequests()
+        {
+            var requests = await _context.Borrowings
+                .Include(b => b.Book)
+                .Include(b => b.Member)
+                .Where(b => b.Status == "Requested")
+                .OrderBy(b => b.IssueDate)
+                .ToListAsync();
+
+            return View(requests);
+        }
+
+        // POST: Borrowings/Approve/5 (Admin/Librarian/Staff)
+        [HttpPost]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var borrowing = await _context.Borrowings
+                .Include(b => b.Book)
+                .FirstOrDefaultAsync(b => b.BorrowingId == id);
+
+            if (borrowing == null || borrowing.Status != "Requested") return NotFound();
+
+            if (borrowing.Book!.AvailableCopies <= 0)
+            {
+                TempData["Error"] = "No available copies left to approve this request.";
+                return RedirectToAction(nameof(PendingRequests));
+            }
+
+            var staffId = _userManager.GetUserId(User);
+
+            borrowing.Status = "Borrowed";
+            borrowing.IssueDate = DateTime.Today;
+            borrowing.DueDate = DateTime.Today.AddDays(14);
+            borrowing.IssuedByStaffId = staffId;
+            borrowing.Book.AvailableCopies -= 1;
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Request approved and book issued.";
+            return RedirectToAction(nameof(PendingRequests));
+        }
+
+        // POST: Borrowings/Reject/5 (Admin/Librarian/Staff)
+        [HttpPost]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reject(int id)
+        {
+            var borrowing = await _context.Borrowings.FindAsync(id);
+            if (borrowing == null || borrowing.Status != "Requested") return NotFound();
+
+            borrowing.Status = "Rejected";
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Request rejected.";
+            return RedirectToAction(nameof(PendingRequests));
+        }
+
+        // GET: Borrowings/Issue (Admin/Librarian/Staff — direct counter issue, no request needed)
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         public async Task<IActionResult> Issue()
         {
             await PopulateDropdowns();
             return View(new IssueBookViewModel());
         }
 
-        // POST: Borrowings/Issue (Staff only)
+        // POST: Borrowings/Issue
         [HttpPost]
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Issue(IssueBookViewModel model)
         {
@@ -85,9 +146,9 @@ namespace LibraryManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Borrowings/Borrow/5  (Member self-service)
+        // GET: Borrowings/Request/5  (Member requests a book — needs approval)
         [Authorize(Roles = "Member")]
-        public async Task<IActionResult> Borrow(int? id)
+        public async Task<IActionResult> Request(int? id)
         {
             if (id == null) return NotFound();
 
@@ -106,11 +167,11 @@ namespace LibraryManagementSystem.Controllers
             return View(book);
         }
 
-        // POST: Borrowings/Borrow/5  (Member self-service)
-        [HttpPost, ActionName("Borrow")]
+        // POST: Borrowings/Request/5
+        [HttpPost, ActionName("Request")]
         [Authorize(Roles = "Member")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BorrowConfirmed(int id)
+        public async Task<IActionResult> RequestConfirmed(int id)
         {
             var book = await _context.Books.FindAsync(id);
             if (book == null) return NotFound();
@@ -127,22 +188,20 @@ namespace LibraryManagementSystem.Controllers
             {
                 BookId = book.BookId,
                 MemberId = memberId!,
-                IssuedByStaffId = null, // self-service, no staff involved
-                IssueDate = DateTime.Today,
-                DueDate = DateTime.Today.AddDays(14),
-                Status = "Borrowed"
+                IssuedByStaffId = null,
+                IssueDate = DateTime.Today, // placeholder until approved
+                DueDate = DateTime.Today,   // placeholder until approved
+                Status = "Requested"
             };
-
-            book.AvailableCopies -= 1;
 
             _context.Borrowings.Add(borrowing);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"You've successfully borrowed \"{book.Title}\". Due back on {borrowing.DueDate.ToShortDateString()}.";
+            TempData["Success"] = $"Your request to borrow \"{book.Title}\" has been submitted and is awaiting staff approval.";
             return RedirectToAction("MyBorrowings");
         }
 
-        // GET: Borrowings/MyBorrowings (Member's own borrowing list)
+        // GET: Borrowings/MyBorrowings (Member)
         [Authorize(Roles = "Member")]
         public async Task<IActionResult> MyBorrowings()
         {
@@ -151,14 +210,14 @@ namespace LibraryManagementSystem.Controllers
             var borrowings = await _context.Borrowings
                 .Include(b => b.Book)
                 .Where(b => b.MemberId == memberId)
-                .OrderByDescending(b => b.IssueDate)
+                .OrderByDescending(b => b.BorrowingId)
                 .ToListAsync();
 
             return View(borrowings);
         }
 
-        // GET: Borrowings/Return/5 (Staff only)
-        [Authorize(Roles = "Staff")]
+        // GET: Borrowings/Return/5 (Admin/Librarian/Staff)
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         public async Task<IActionResult> Return(int? id)
         {
             if (id == null) return NotFound();
@@ -174,9 +233,9 @@ namespace LibraryManagementSystem.Controllers
             return View(borrowing);
         }
 
-        // POST: Borrowings/Return/5 (Staff only)
+        // POST: Borrowings/Return/5
         [HttpPost, ActionName("Return")]
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReturnConfirmed(int id)
         {
@@ -206,8 +265,8 @@ namespace LibraryManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Borrowings/Renew/5 (Staff only)
-        [Authorize(Roles = "Staff")]
+        // GET: Borrowings/Renew/5 (Admin/Librarian only)
+        [Authorize(Roles = "Admin,Librarian")]
         public async Task<IActionResult> Renew(int? id)
         {
             if (id == null) return NotFound();
@@ -222,9 +281,9 @@ namespace LibraryManagementSystem.Controllers
             return View(borrowing);
         }
 
-        // POST: Borrowings/Renew/5 (Staff only)
+        // POST: Borrowings/Renew/5 (Admin/Librarian only)
         [HttpPost, ActionName("Renew")]
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Admin,Librarian")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RenewConfirmed(int id)
         {

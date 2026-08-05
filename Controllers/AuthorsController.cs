@@ -6,7 +6,7 @@ using LibraryManagementSystem.Data;
 
 namespace LibraryManagementSystem.Controllers
 {
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles = "Admin,Librarian")]
     public class AuthorsController : Controller
     {
         private readonly ApplicationDbContext _context;

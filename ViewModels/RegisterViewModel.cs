@@ -21,6 +21,6 @@ namespace LibraryManagementSystem.ViewModels
         public string ConfirmPassword { get; set; }
 
         [Required]
-        public string Role { get; set; } // "Staff" or "Member"
+        public string Role { get; set; } // "Admin", "Librarian", "Staff", or "Member"
     }
 }

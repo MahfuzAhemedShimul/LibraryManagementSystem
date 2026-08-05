@@ -6,7 +6,7 @@
 
 <h1>Books</h1>
 
-@if (User.IsInRole("Staff"))
+@if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
 {
     <p><a asp-action="Create" class="btn btn-primary">Add New Book</a></p>
 }
@@ -26,7 +26,7 @@
             <th>Title</th>
             <th>Author</th>
             <th>Category</th>
-            @if (User.IsInRole("Staff"))
+            @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
             {
                 <th>ISBN</th>
                 <th>Total Copies</th>
@@ -46,28 +46,31 @@
                 <td>@item.Title</td>
                 <td>@item.Author?.Name</td>
                 <td>@item.Category?.Name</td>
-                @if (User.IsInRole("Staff"))
+                @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
                 {
                     <td>@item.ISBN</td>
                     <td>@item.TotalCopies</td>
                     <td>@item.AvailableCopies</td>
                 }
-                <td>@("৳" + item.Price.ToString("N2"))</td>           
+                <td>@("৳" + item.Price.ToString("N2"))</td>
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     <td>
-                        @if (User.IsInRole("Staff"))
+                        @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
                         {
                             <a asp-action="Edit" asp-route-id="@item.BookId" class="btn btn-sm btn-secondary">Edit</a>
-                            <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
                             <a asp-action="Delete" asp-route-id="@item.BookId" class="btn btn-sm btn-danger">Delete</a>
+                        }
+                        @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
+                        {
+                            <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
                         }
                         @if (User.IsInRole("Member"))
                         {
                             <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
                             @if (item.AvailableCopies > 0)
                             {
-                                <a asp-controller="Borrowings" asp-action="Borrow" asp-route-id="@item.BookId" class="btn btn-sm btn-primary">Borrow</a>
+                                <a asp-controller="Borrowings" asp-action="Request" asp-route-id="@item.BookId" class="btn btn-sm btn-primary">Request</a>
                                 <a asp-controller="Purchases" asp-action="Buy" asp-route-id="@item.BookId" class="btn btn-sm btn-success">Buy</a>
                             }
                             else

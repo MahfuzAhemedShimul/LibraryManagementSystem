@@ -28,7 +28,14 @@
                             <a class="nav-link text-dark" asp-controller="Books" asp-action="Index">Books</a>
                         </li>
 
-                        @if (User.IsInRole("Staff"))
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Staff" asp-action="Index">Staff & Librarians</a>
+                            </li>
+                        }
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Authors" asp-action="Index">Authors</a>
@@ -43,10 +50,20 @@
                                 <a class="nav-link text-dark" asp-controller="Borrowings" asp-action="Index">Borrowings</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Fines" asp-action="Index">Fines</a>
+                                <a class="nav-link text-dark" asp-controller="Reports" asp-action="Index">Reports</a>
+                            </li>
+                        }
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Borrowings" asp-action="PendingRequests">Pending Requests</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Reports" asp-action="Index">Reports</a>
+                                <a class="nav-link text-dark" asp-controller="Borrowings" asp-action="Issue">Issue Book</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Fines" asp-action="Index">Fines</a>
                             </li>
                         }
 
