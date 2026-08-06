@@ -6,42 +6,70 @@
 
 <h2>Register</h2>
 
-<form asp-action="Register" method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
 
-    <div class="form-group mb-3">
-        <label asp-for="FullName"></label>
-        <input asp-for="FullName" class="form-control" />
-        <span asp-validation-for="FullName" class="text-danger"></span>
+            <div class="form-group mb-3">
+                <label asp-for="FullName"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ConfirmPassword"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Role"></label>
+                <select asp-for="Role" class="form-control">
+                    <option value="Member">Member</option>
+                    <option value="Staff">Staff</option>
+                    <option value="Librarian">Librarian</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
     </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">General Instructions</h5>
+                <ol class="mb-0">
+                    <li>The users are requested to observe the opening and closing hours of the library.</li>
+                    <li>The library furniture, tools, books etc. should not be damaged.</li>
+                    <li>Drinks and eatables are not allowed in the library. Using mobile phones is not permitted inside the library. Users in sleeping dress are not allowed to enter the library.</li>
+                    <li>All users should follow the rules and regulations. If a student does not follow the rules, then his name may be sent to the Disciplinary Committee.</li>
+                </ol>
+            </div>
+        </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Necessary Documents Needed</h5>
+                <ol class="mb-0">
+                    <li>Valid National ID / Passport / DOB attested photocopy with current residence address</li>
+                    <li>Two passport size photos, attested</li>
+                </ol>
+            </div>
+        </div>
     </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="ConfirmPassword"></label>
-        <input asp-for="ConfirmPassword" class="form-control" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Role"></label>
-        <select asp-for="Role" class="form-control">
-            <option value="Member">Member</option>
-            <option value="Staff">Staff</option>
-            <option value="Librarian">Librarian</option>
-            <option value="Admin">Admin</option>
-        </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Register</button>
-</form>
+</div>
