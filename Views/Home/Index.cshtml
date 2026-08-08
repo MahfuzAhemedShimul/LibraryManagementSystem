@@ -176,10 +176,16 @@ else if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole
 }
 else
 {
-    <div class="text-center">
+    <div class="text-center py-5">
         <h1 class="display-4">Welcome to the MAS Library BD-MLB</h1>
-        <p>Read More, Learn Faster, Grow Further.</p>
-        <a asp-controller="Books" asp-action="Index" class="btn btn-primary btn-lg">Browse Books</a>
-        <a asp-controller="Home" asp-action="BecomeAMember" class="btn btn-success btn-lg">Become a Member</a>
+        <p class="lead text-muted">Read More, Learn Faster, Grow Further.</p>
+        <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+            <a asp-controller="Books" asp-action="Index" class="btn btn-primary btn-lg px-4 py-3 shadow-sm">
+                <i class="bi bi-book"></i> Browse Books
+            </a>
+            <a asp-controller="Home" asp-action="BecomeAMember" class="btn btn-success btn-lg px-4 py-3 shadow-sm">
+                <i class="bi bi-person-plus"></i> Become a Member
+            </a>
+        </div>
     </div>
 }

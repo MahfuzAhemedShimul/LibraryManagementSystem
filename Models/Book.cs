@@ -21,5 +21,10 @@ namespace LibraryManagementSystem.Models
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal Price { get; set; }
+
+        public bool IsFeatured { get; set; }
+        public bool IsPopular { get; set; }
+
+        public string? ImageUrl { get; set; }
     }
 }

@@ -57,6 +57,20 @@ namespace LibraryManagementSystem.Controllers
                 }
             }
 
+            // Featured Books — chosen manually by Admin/Librarian
+            ViewBag.FeaturedBooks = await _context.Books
+                .Include(b => b.Author)
+                .Where(b => b.IsFeatured)
+                .Take(8)
+                .ToListAsync();
+
+            // Popular Books — chosen manually by Admin/Librarian
+            ViewBag.PopularBooks = await _context.Books
+                .Include(b => b.Author)
+                .Where(b => b.IsPopular)
+                .Take(8)
+                .ToListAsync();
+
             return View();
         }
 

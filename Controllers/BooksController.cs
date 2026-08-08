@@ -62,7 +62,7 @@ namespace LibraryManagementSystem.Controllers
         // POST: Books/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,AuthorId,CategoryId,ISBN,TotalCopies,Price")] Book book)
+        public async Task<IActionResult> Create([Bind("Title,AuthorId,CategoryId,ISBN,TotalCopies,Price,IsFeatured,IsPopular,ImageUrl")] Book book)
         {
             if (ModelState.IsValid)
             {
@@ -93,7 +93,7 @@ namespace LibraryManagementSystem.Controllers
         // POST: Books/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("BookId,Title,AuthorId,CategoryId,ISBN,TotalCopies,AvailableCopies,Price")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("BookId,Title,AuthorId,CategoryId,ISBN,TotalCopies,AvailableCopies,Price,IsFeatured,IsPopular,ImageUrl")] Book book)
         {
             if (id != book.BookId) return NotFound();
 
@@ -145,6 +145,35 @@ namespace LibraryManagementSystem.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Books/ManageFeatured
+        public async Task<IActionResult> ManageFeatured()
+        {
+            var books = await _context.Books
+                .Include(b => b.Author)
+                .OrderBy(b => b.Title)
+                .ToListAsync();
+
+            return View(books);
+        }
+
+        // POST: Books/ManageFeatured
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageFeatured(List<int> featuredIds, List<int> popularIds)
+        {
+            var books = await _context.Books.ToListAsync();
+
+            foreach (var book in books)
+            {
+                book.IsFeatured = featuredIds != null && featuredIds.Contains(book.BookId);
+                book.IsPopular = popularIds != null && popularIds.Contains(book.BookId);
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Featured and Popular books updated.";
+            return RedirectToAction(nameof(ManageFeatured));
         }
 
         private bool BookExists(int id)

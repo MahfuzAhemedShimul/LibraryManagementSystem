@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - LibraryManagementSystem</title>
+    <title>@ViewData["Title"] - MAS Library BD</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
@@ -12,126 +12,117 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-0">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LibraryManagementSystem</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MAS Library BD</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="About">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Contact">Contact</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Books" asp-action="Index">Books</a>
-                        </li>
-
-                        @if (User.IsInRole("Admin"))
-                        {
+                    @if (User.Identity == null || !User.Identity.IsAuthenticated)
+                    {
+                        <ul class="navbar-nav flex-grow-1">
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Staff" asp-action="Index">Staff & Librarians</a>
-                            </li>
-                        }
-
-                        @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Authors" asp-action="Index">Authors</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Categories" asp-action="Index">Categories</a>
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="About"><i class="bi bi-info-circle"></i> About</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Members" asp-action="Index">Members</a>
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Contact"><i class="bi bi-envelope"></i> Contact</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Borrowings" asp-action="Index">Borrowings</a>
+                                <a class="nav-link text-dark" asp-controller="Books" asp-action="Index"><i class="bi bi-book"></i> Books</a>
+                            </li>
+                        </ul>
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Reports" asp-action="Index">Reports</a>
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register"><i class="bi bi-pencil-square"></i> Register</a>
                             </li>
-                        }
-
-                        @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Borrowings" asp-action="PendingRequests">Pending Requests</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Borrowings" asp-action="Issue">Issue Book</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Fines" asp-action="Index">Fines</a>
-                            </li>
-                        }
-
-                        @if (User.IsInRole("Member"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Borrowings" asp-action="MyBorrowings">My Borrowings</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Purchases" asp-action="MyPurchases">My Purchases</a>
-                            </li>
-                        }
-
-                        @if (User.Identity != null && User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Chat" asp-action="Index">Ask Assistant</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Profile" asp-action="Index">My Profile</a>
-                            </li>
-                        }
-                    </ul>
-
-                    <ul class="navbar-nav">
-                        @if (User.Identity != null && User.Identity.IsAuthenticated)
-                        {
+                        </ul>
+                    }
+                    else
+                    {
+                        <span></span>
+                        <ul class="navbar-nav">
                             <li class="nav-item">
                                 <span class="nav-link text-dark">Hello, @User.Identity.Name</span>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">
-                                    <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+                                    <button type="submit" class="nav-link btn btn-link text-dark"><i class="bi bi-box-arrow-right"></i> Logout</button>
                                 </form>
                             </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
-                            </li>
-                        }
-                    </ul>
+                        </ul>
+                    }
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+    <div class="app-body">
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <aside class="sidebar">
+                <ul class="sidebar-nav">
+                    <li><a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Home</a></li>
+                    <li><a asp-controller="Home" asp-action="About"><i class="bi bi-info-circle"></i> About</a></li>
+                    <li><a asp-controller="Home" asp-action="Contact"><i class="bi bi-envelope"></i> Contact</a></li>
+                    <li><a asp-controller="Books" asp-action="Index"><i class="bi bi-book"></i> Books</a></li>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li><a asp-controller="Staff" asp-action="Index"><i class="bi bi-people"></i> Staff & Librarians</a></li>
+                    }
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+                    {
+                        <li><a asp-controller="Authors" asp-action="Index"><i class="bi bi-person-badge"></i> Authors</a></li>
+                        <li><a asp-controller="Categories" asp-action="Index"><i class="bi bi-tags"></i> Categories</a></li>
+                        <li><a asp-controller="Members" asp-action="Index"><i class="bi bi-person-lines-fill"></i> Members</a></li>
+                        <li><a asp-controller="Borrowings" asp-action="Index"><i class="bi bi-journal-text"></i> Borrowings</a></li>
+                        <li><a asp-controller="Reports" asp-action="Index"><i class="bi bi-bar-chart"></i> Reports</a></li>
+                    }
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
+                    {
+                        <li><a asp-controller="Borrowings" asp-action="PendingRequests"><i class="bi bi-hourglass-split"></i> Pending Requests</a></li>
+                        <li><a asp-controller="Borrowings" asp-action="Issue"><i class="bi bi-box-arrow-up-right"></i> Issue Book</a></li>
+                        <li><a asp-controller="Fines" asp-action="Index"><i class="bi bi-cash-coin"></i> Fines</a></li>
+                    }
+
+                    @if (User.IsInRole("Member"))
+                    {
+                        <li><a asp-controller="Borrowings" asp-action="MyBorrowings"><i class="bi bi-journal-bookmark"></i> My Borrowings</a></li>
+                        <li><a asp-controller="Purchases" asp-action="MyPurchases"><i class="bi bi-bag-check"></i> My Purchases</a></li>
+                    }
+
+                    <li><a asp-controller="Chat" asp-action="Index"><i class="bi bi-chat-dots"></i> Ask Assistant</a></li>
+                    <li><a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i> My Profile</a></li>
+                </ul>
+            </aside>
+        }
+
+        <div class="main-content">
+            <div class="container-fluid">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+
+            <footer class="border-top footer text-muted">
+                <div class="container-fluid">
+                    &copy; 2026 - MAS Library BD - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    <span class="float-end">Created by Mahfuz Ahmed Shimul</span>
+                </div>
+            </footer>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Library Management System - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-            <span class="float-end">Created by Mahfuz Ahmed Shimul</span>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
