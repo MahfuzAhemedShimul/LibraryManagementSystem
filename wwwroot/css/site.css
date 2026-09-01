@@ -334,3 +334,19 @@ body {
         text-align: center;
     }
 }
+/* Homepage hero background */
+
+/* Homepage hero background */
+.home-hero-bg {
+    background-image: linear-gradient(rgba(9, 23, 36, 0.55), rgba(9, 23, 36, 0.55)), url('/images/library-hero-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 12px;
+    padding: 3rem 1.5rem;
+}
+
+    .home-hero-bg h1,
+    .home-hero-bg p {
+        color: white !important;
+    }

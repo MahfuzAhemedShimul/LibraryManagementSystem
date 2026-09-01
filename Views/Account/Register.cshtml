@@ -1,10 +1,16 @@
 ﻿@model LibraryManagementSystem.ViewModels.RegisterViewModel
 
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Create Account";
 }
 
-<h2>Register</h2>
+<h2>Create New Account</h2>
+<p class="text-muted">Create a login for a Member, Staff, Librarian, or Admin.</p>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
 
 <div class="row">
     <div class="col-md-6">
@@ -45,31 +51,7 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-primary">Register</button>
+            <button type="submit" class="btn btn-primary">Create Account</button>
         </form>
-    </div>
-
-    <div class="col-md-6">
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">General Instructions</h5>
-                <ol class="mb-0">
-                    <li>The users are requested to observe the opening and closing hours of the library.</li>
-                    <li>The library furniture, tools, books etc. should not be damaged.</li>
-                    <li>Drinks and eatables are not allowed in the library. Using mobile phones is not permitted inside the library. Users in sleeping dress are not allowed to enter the library.</li>
-                    <li>All users should follow the rules and regulations. If a student does not follow the rules, then his name may be sent to the Disciplinary Committee.</li>
-                </ol>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Necessary Documents Needed</h5>
-                <ol class="mb-0">
-                    <li>Valid National ID / Passport / DOB attested photocopy with current residence address</li>
-                    <li>Two passport size photos, attested</li>
-                </ol>
-            </div>
-        </div>
     </div>
 </div>

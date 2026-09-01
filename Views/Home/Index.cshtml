@@ -2,6 +2,21 @@
     ViewData["Title"] = "Home Page";
 }
 
+<div class="text-center text-muted mb-3">
+    <i class="bi bi-clock"></i> <span id="liveDateTime"></span>
+</div>
+
+<div class="row justify-content-center mb-4">
+    <div class="col-md-6">
+        <form asp-controller="Books" asp-action="Index" method="get" class="d-flex">
+            <input type="text" name="searchString" class="form-control me-2" placeholder="Search for a book by title or ISBN..." />
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </form>
+    </div>
+</div>
+
 @if (User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Librarian")))
 {
     <h1>@(User.IsInRole("Admin") ? "Admin" : "Librarian") Dashboard</h1>
@@ -176,7 +191,7 @@ else if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole
 }
 else
 {
-    <div class="text-center py-5">
+    <div class="text-center py-5 home-hero-bg">
         <h1 class="display-4">Welcome to the MAS Library BD-MLB</h1>
         <p class="lead text-muted">Read More, Learn Faster, Grow Further.</p>
         <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
@@ -188,4 +203,19 @@ else
             </a>
         </div>
     </div>
+}
+
+@section Scripts {
+    <script>
+        function updateLiveDateTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            };
+            document.getElementById('liveDateTime').textContent = now.toLocaleString('en-US', options);
+        }
+        updateLiveDateTime();
+        setInterval(updateLiveDateTime, 1000);
+    </script>
 }

@@ -1,5 +1,6 @@
 ﻿using LibraryManagementSystem.Models;
 using LibraryManagementSystem.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,12 +17,15 @@ namespace LibraryManagementSystem.Controllers
             _signInManager = signInManager;
         }
 
+        // Only Admin can create new accounts (Member, Staff, Librarian, Admin)
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
@@ -33,7 +37,7 @@ namespace LibraryManagementSystem.Controllers
                 UserName = model.Email,
                 Email = model.Email,
                 FullName = model.FullName,
-                IsAdmin = false // default; admins are promoted manually later
+                IsAdmin = false
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -41,8 +45,8 @@ namespace LibraryManagementSystem.Controllers
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, model.Role);
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Index", "Home");
+                TempData["Success"] = $"Account created successfully for {model.FullName} ({model.Role}).";
+                return RedirectToAction(nameof(Register));
             }
 
             foreach (var error in result.Errors)
@@ -76,7 +80,6 @@ namespace LibraryManagementSystem.Controllers
             return View(model);
         }
 
-        // Add the AccessDenied action here
         [HttpGet]
         public IActionResult AccessDenied()
         {
