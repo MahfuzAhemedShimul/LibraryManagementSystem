@@ -71,6 +71,12 @@ namespace LibraryManagementSystem.Controllers
                 .Take(8)
                 .ToListAsync();
 
+            // Public stats (shown to everyone, including Guests)
+            ViewBag.PublicTotalBooks = await _context.Books.CountAsync();
+            ViewBag.PublicTotalCategories = await _context.Categories.CountAsync();
+            ViewBag.PublicTotalAuthors = await _context.Authors.CountAsync();
+            ViewBag.PublicTotalMembers = (await _userManager.GetUsersInRoleAsync("Member")).Count;
+
             return View();
         }
 

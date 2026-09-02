@@ -203,6 +203,116 @@ else
             </a>
         </div>
     </div>
+
+    <!-- Quick Stats Strip -->
+    <div class="row text-center mt-4 gy-3">
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <i class="bi bi-book display-6 text-primary"></i>
+                <h3 class="mb-0">@ViewBag.PublicTotalBooks</h3>
+                <p class="text-muted mb-0">Books</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <i class="bi bi-tags display-6 text-primary"></i>
+                <h3 class="mb-0">@ViewBag.PublicTotalCategories</h3>
+                <p class="text-muted mb-0">Categories</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <i class="bi bi-person-badge display-6 text-primary"></i>
+                <h3 class="mb-0">@ViewBag.PublicTotalAuthors</h3>
+                <p class="text-muted mb-0">Authors</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <i class="bi bi-people display-6 text-primary"></i>
+                <h3 class="mb-0">@ViewBag.PublicTotalMembers</h3>
+                <p class="text-muted mb-0">Members</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Why Join Us -->
+    <div class="row mt-5 gy-3">
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-search display-5 text-primary mb-2"></i>
+                <h5>Find Any Book</h5>
+                <p class="text-muted mb-0">Search our full catalog by title, author, or ISBN in seconds.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-journal-check display-5 text-primary mb-2"></i>
+                <h5>Borrow or Buy</h5>
+                <p class="text-muted mb-0">Request a book to borrow, or purchase your own copy — your choice.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-3">
+                <i class="bi bi-robot display-5 text-primary mb-2"></i>
+                <h5>Ask Our AI Assistant</h5>
+                <p class="text-muted mb-0">Get instant answers about books, availability, and how to use the library.</p>
+            </div>
+        </div>
+    </div>
+}
+
+@{
+    var featuredBooks = ViewBag.FeaturedBooks as List<LibraryManagementSystem.Models.Book>;
+    var popularBooks = ViewBag.PopularBooks as List<LibraryManagementSystem.Models.Book>;
+}
+
+@if (featuredBooks != null && featuredBooks.Any())
+{
+    <div class="mt-5 book-carousel-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0">New <span class="text-success">Arrivals</span></h3>
+            <div>
+                <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow" onclick="scrollCarousel('featuredCarousel', -1)">&lt;</button>
+                <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow" onclick="scrollCarousel('featuredCarousel', 1)">&gt;</button>
+            </div>
+        </div>
+        <div id="featuredCarousel" class="book-carousel">
+            @foreach (var book in featuredBooks)
+            {
+                <div class="book-card">
+                    <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId">
+                        <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "https://via.placeholder.com/200x300?text=No+Cover" : book.ImageUrl)" class="book-cover" alt="@book.Title" />
+                    </a>
+                    <p class="book-title mt-2 mb-0">@book.Title</p>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (popularBooks != null && popularBooks.Any())
+{
+    <div class="mt-5 mb-5 book-carousel-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0">Popular <span class="text-success">Books</span></h3>
+            <div>
+                <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow" onclick="scrollCarousel('popularCarousel', -1)">&lt;</button>
+                <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow" onclick="scrollCarousel('popularCarousel', 1)">&gt;</button>
+            </div>
+        </div>
+        <div id="popularCarousel" class="book-carousel">
+            @foreach (var book in popularBooks)
+            {
+                <div class="book-card">
+                    <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId">
+                        <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "https://via.placeholder.com/200x300?text=No+Cover" : book.ImageUrl)" class="book-cover" alt="@book.Title" />
+                    </a>
+                    <p class="book-title mt-2 mb-0">@book.Title</p>
+                </div>
+            }
+        </div>
+    </div>
 }
 
 @section Scripts {
@@ -217,5 +327,10 @@ else
         }
         updateLiveDateTime();
         setInterval(updateLiveDateTime, 1000);
+
+        function scrollCarousel(id, direction) {
+            const el = document.getElementById(id);
+            el.scrollBy({ left: direction * 220, behavior: 'smooth' });
+        }
     </script>
 }

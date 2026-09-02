@@ -10,10 +10,11 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="BookId" />
             <input type="hidden" asp-for="AvailableCopies" />
+            <input type="hidden" asp-for="ImageUrl" />
 
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
@@ -56,9 +57,16 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="ImageUrl" class="control-label">Cover Image URL</label>
-                <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/cover.jpg" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                <label class="control-label">Cover Image</label>
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div class="mb-2">
+                        <img src="@Model.ImageUrl" style="width:80px; height:110px; object-fit:cover; border-radius:4px;" alt="Current cover" />
+                        <span class="text-muted d-block small">Current cover</span>
+                    </div>
+                }
+                <input type="file" name="CoverImage" class="form-control" accept="image/*" />
+                <span class="text-muted small">Leave empty to keep the current cover.</span>
             </div>
 
             <div class="form-check mb-2 mt-3">

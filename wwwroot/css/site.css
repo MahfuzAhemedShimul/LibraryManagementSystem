@@ -350,3 +350,60 @@ body {
     .home-hero-bg p {
         color: white !important;
     }
+.stat-box {
+    background: white;
+    border-radius: 10px;
+    padding: 1.2rem 0.5rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.book-carousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    scroll-behavior: smooth;
+    padding-bottom: 10px;
+}
+
+    .book-carousel::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .book-carousel::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+
+.book-card {
+    flex: 0 0 auto;
+    width: 200px;
+    text-align: left;
+}
+
+.book-cover {
+    width: 200px;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease;
+}
+
+    .book-cover:hover {
+        transform: translateY(-4px);
+    }
+
+.book-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.carousel-arrow {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+}

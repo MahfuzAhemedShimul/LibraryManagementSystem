@@ -11,10 +11,12 @@ namespace LibraryManagementSystem.Controllers
     public class BooksController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public BooksController(ApplicationDbContext context)
+        public BooksController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Books  (public browsing allowed too, so override the class-level restriction here)
@@ -62,11 +64,17 @@ namespace LibraryManagementSystem.Controllers
         // POST: Books/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,AuthorId,CategoryId,ISBN,TotalCopies,Price,IsFeatured,IsPopular,ImageUrl")] Book book)
+        public async Task<IActionResult> Create([Bind("Title,AuthorId,CategoryId,ISBN,TotalCopies,Price,IsFeatured,IsPopular")] Book book, IFormFile? CoverImage)
         {
             if (ModelState.IsValid)
             {
                 book.AvailableCopies = book.TotalCopies; // new books start fully available
+
+                if (CoverImage != null && CoverImage.Length > 0)
+                {
+                    book.ImageUrl = await SaveCoverImage(CoverImage);
+                }
+
                 _context.Add(book);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -93,7 +101,7 @@ namespace LibraryManagementSystem.Controllers
         // POST: Books/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("BookId,Title,AuthorId,CategoryId,ISBN,TotalCopies,AvailableCopies,Price,IsFeatured,IsPopular,ImageUrl")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("BookId,Title,AuthorId,CategoryId,ISBN,TotalCopies,AvailableCopies,Price,IsFeatured,IsPopular,ImageUrl")] Book book, IFormFile? CoverImage)
         {
             if (id != book.BookId) return NotFound();
 
@@ -101,6 +109,12 @@ namespace LibraryManagementSystem.Controllers
             {
                 try
                 {
+                    if (CoverImage != null && CoverImage.Length > 0)
+                    {
+                        book.ImageUrl = await SaveCoverImage(CoverImage);
+                    }
+                    // else: keep whatever ImageUrl was already posted (existing hidden field), so it doesn't get wiped out
+
                     _context.Update(book);
                     await _context.SaveChangesAsync();
                 }
@@ -174,6 +188,22 @@ namespace LibraryManagementSystem.Controllers
             await _context.SaveChangesAsync();
             TempData["Success"] = "Featured and Popular books updated.";
             return RedirectToAction(nameof(ManageFeatured));
+        }
+
+        private async Task<string> SaveCoverImage(IFormFile coverImage)
+        {
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "book-covers");
+            Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(coverImage.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await coverImage.CopyToAsync(fileStream);
+            }
+
+            return "/images/book-covers/" + uniqueFileName;
         }
 
         private bool BookExists(int id)
