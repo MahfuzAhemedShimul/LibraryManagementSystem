@@ -24,5 +24,13 @@ namespace LibraryManagementSystem.Models
         public decimal PricePaid { get; set; }
 
         public DateTime PurchaseDate { get; set; } = DateTime.Today;
+
+        // "Pending", "Confirmed", "Rejected"
+        public string Status { get; set; } = "Pending";
+
+        public string? ApprovedByStaffId { get; set; }
+
+        [ForeignKey("ApprovedByStaffId")]
+        public virtual ApplicationUser? ApprovedByStaff { get; set; }
     }
 }

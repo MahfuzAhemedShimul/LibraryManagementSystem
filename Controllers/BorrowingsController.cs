@@ -48,11 +48,33 @@ namespace LibraryManagementSystem.Controllers
             return View(requests);
         }
 
+        // GET: Borrowings/Approve/5 (Admin/Librarian/Staff) — shows a form to pick the due date
+        [Authorize(Roles = "Admin,Librarian,Staff")]
+        public async Task<IActionResult> Approve(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var borrowing = await _context.Borrowings
+                .Include(b => b.Book)
+                .Include(b => b.Member)
+                .FirstOrDefaultAsync(b => b.BorrowingId == id);
+
+            if (borrowing == null || borrowing.Status != "Requested") return NotFound();
+
+            if (borrowing.Book!.AvailableCopies <= 0)
+            {
+                TempData["Error"] = "No available copies left to approve this request.";
+                return RedirectToAction(nameof(PendingRequests));
+            }
+
+            return View(borrowing);
+        }
+
         // POST: Borrowings/Approve/5 (Admin/Librarian/Staff)
-        [HttpPost]
+        [HttpPost, ActionName("Approve")]
         [Authorize(Roles = "Admin,Librarian,Staff")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Approve(int id)
+        public async Task<IActionResult> ApproveConfirmed(int id, DateTime dueDate)
         {
             var borrowing = await _context.Borrowings
                 .Include(b => b.Book)
@@ -66,11 +88,17 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction(nameof(PendingRequests));
             }
 
+            if (dueDate.Date <= DateTime.Today)
+            {
+                TempData["Error"] = "Due date must be in the future.";
+                return RedirectToAction(nameof(Approve), new { id });
+            }
+
             var staffId = _userManager.GetUserId(User);
 
             borrowing.Status = "Borrowed";
             borrowing.IssueDate = DateTime.Today;
-            borrowing.DueDate = DateTime.Today.AddDays(14);
+            borrowing.DueDate = dueDate;
             borrowing.IssuedByStaffId = staffId;
             borrowing.Book.AvailableCopies -= 1;
 
@@ -298,7 +326,28 @@ namespace LibraryManagementSystem.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        // GET: Borrowings/Receipt/5
+        // Admin/Librarian only
+        [Authorize(Roles = "Admin,Librarian")]
+        public async Task<IActionResult> Receipt(int id)
+        {
+            var borrowing = await _context.Borrowings
+                .Include(b => b.Book)
+                    .ThenInclude(b => b!.Author)
+                .Include(b => b.Member)
+                .Include(b => b.IssuedByStaff)
+                .FirstOrDefaultAsync(b => b.BorrowingId == id);
 
+            if (borrowing == null)
+                return NotFound();
+
+            var fine = await _context.Fines
+                .FirstOrDefaultAsync(f => f.BorrowingId == id);
+
+            ViewBag.Fine = fine;
+
+            return View(borrowing);
+        }
         private async Task PopulateDropdowns()
         {
             var books = await _context.Books.Where(b => b.AvailableCopies > 0).ToListAsync();

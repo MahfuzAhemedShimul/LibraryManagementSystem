@@ -6,21 +6,29 @@
 
 <h1>My Purchases</h1>
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
 <table class="table">
     <thead>
         <tr>
             <th>Book</th>
             <th>Price Paid</th>
             <th>Date</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
+            var rowClass = item.Status == "Pending" ? "table-warning" : item.Status == "Rejected" ? "table-secondary" : "";
+            <tr class="@rowClass">
                 <td>@item.Book?.Title</td>
                 <td>@("৳" + item.PricePaid.ToString("N2"))</td>
                 <td>@item.PurchaseDate.ToShortDateString()</td>
+                <td>@item.Status</td>
             </tr>
         }
     </tbody>

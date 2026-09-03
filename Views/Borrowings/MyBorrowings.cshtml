@@ -24,11 +24,13 @@
     <tbody>
         @foreach (var item in Model)
         {
+            var isRequested = item.Status == "Requested";
             var isOverdue = item.Status == "Borrowed" && item.DueDate.Date < DateTime.Today;
-            <tr class="@(isOverdue ? "table-danger" : "")">
+            var rowClass = isRequested ? "table-warning" : item.Status == "Rejected" ? "table-secondary" : isOverdue ? "table-danger" : "";
+            <tr class="@rowClass">
                 <td>@item.Book?.Title</td>
-                <td>@item.IssueDate.ToShortDateString()</td>
-                <td>@item.DueDate.ToShortDateString()</td>
+                <td>@(isRequested ? "-" : item.IssueDate.ToShortDateString())</td>
+                <td>@(isRequested ? "-" : item.DueDate.ToShortDateString())</td>
                 <td>@(item.ReturnDate.HasValue ? item.ReturnDate.Value.ToShortDateString() : "-")</td>
                 <td>@(isOverdue ? "Overdue" : item.Status)</td>
             </tr>

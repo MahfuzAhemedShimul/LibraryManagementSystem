@@ -1,0 +1,179 @@
+﻿@model LibraryManagementSystem.Models.Borrowing
+
+@{
+    ViewData["Title"] = "Borrowing Receipt";
+    var fine = ViewBag.Fine as LibraryManagementSystem.Models.Fine;
+}
+
+<div class="container mt-4">
+    <div class="receipt">
+
+        <div class="text-center mb-4">
+            <h2>LIBRARY MANAGEMENT SYSTEM</h2>
+            <p class="mb-0">Borrowing Receipt</p>
+            <hr />
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <strong>Receipt ID:</strong>
+                #@Model.BorrowingId
+            </div>
+
+            <div class="col-md-6 text-md-end">
+                <strong>Status:</strong>
+                @Model.Status
+            </div>
+        </div>
+
+        <h5 class="border-bottom pb-2">Member Information</h5>
+
+        <div class="mb-4">
+            <p>
+                <strong>Name:</strong>
+                @Model.Member?.FullName
+            </p>
+
+            <p>
+                <strong>Email:</strong>
+                @Model.Member?.Email
+            </p>
+
+            <p>
+                <strong>Phone:</strong>
+                @Model.Member?.PhoneNumber
+            </p>
+        </div>
+
+        <h5 class="border-bottom pb-2">Book Information</h5>
+
+        <div class="mb-4">
+            <p>
+                <strong>Book:</strong>
+                @Model.Book?.Title
+            </p>
+
+            <p>
+                <strong>Author:</strong>
+                @Model.Book?.Author?.Name
+            </p>
+
+            <p>
+                <strong>ISBN:</strong>
+                @Model.Book?.ISBN
+            </p>
+        </div>
+
+        <h5 class="border-bottom pb-2">Borrowing Details</h5>
+
+        <table class="table table-bordered">
+            <tr>
+                <th>Issue Date</th>
+                <td>@Model.IssueDate.ToShortDateString()</td>
+            </tr>
+
+            <tr>
+                <th>Due Date</th>
+                <td>@Model.DueDate.ToShortDateString()</td>
+            </tr>
+
+            <tr>
+                <th>Return Date</th>
+                <td>
+                    @(Model.ReturnDate.HasValue
+                        ? Model.ReturnDate.Value.ToShortDateString()
+                        : "Not Returned")
+                </td>
+            </tr>
+
+            <tr>
+                <th>Issued By</th>
+                <td>@Model.IssuedByStaff?.FullName</td>
+            </tr>
+        </table>
+
+        <h5 class="border-bottom pb-2">Fine Information</h5>
+
+        <table class="table table-bordered">
+            <tr>
+                <th>Fine Amount</th>
+                <td>
+                    @(fine != null
+                        ? $"{fine.Amount:0.00} BDT"
+                        : "0.00 BDT")
+                </td>
+            </tr>
+
+            <tr>
+                <th>Payment Status</th>
+                <td>
+                    @if (fine == null || fine.Amount == 0)
+                    {
+                        <span>No Fine</span>
+                    }
+                    else if (fine.IsPaid)
+                    {
+                        <span>Paid</span>
+                    }
+                    else
+                    {
+                        <span>Unpaid</span>
+                    }
+                </td>
+            </tr>
+        </table>
+
+        <div class="text-center mt-5">
+            <p>Thank you for using our library.</p>
+        </div>
+
+        <div class="d-flex justify-content-between mt-5">
+            <div>
+                ______________________
+                <br />
+                Member Signature
+            </div>
+
+            <div>
+                ______________________
+                <br />
+                Librarian Signature
+            </div>
+        </div>
+
+        <div class="text-center mt-4 print-area">
+            <button onclick="window.print()" class="btn btn-primary">
+                🖨 Print Receipt
+            </button>
+
+            <a asp-action="Index" class="btn btn-secondary">
+                Back
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .receipt {
+        max-width: 800px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #ddd;
+        background: white;
+    }
+
+    @@media print {
+        .print-area {
+            display: none !important;
+        }
+
+        .receipt {
+            border: none;
+        }
+
+        body {
+            background: white;
+        }
+    }
+</style>

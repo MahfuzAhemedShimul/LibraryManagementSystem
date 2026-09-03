@@ -1,50 +1,31 @@
-﻿@model IEnumerable<LibraryManagementSystem.Models.Borrowing>
+﻿@model LibraryManagementSystem.Models.Borrowing
 
 @{
-    ViewData["Title"] = "Pending Requests";
+    ViewData["Title"] = "Approve Request";
 }
 
-<h1>Pending Borrow Requests</h1>
+<h1>Approve Borrow Request</h1>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-@if (!Model.Any())
-{
-    <p><em>No pending requests.</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Book</th>
-                <th>Member</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.Book?.Title</td>
-                    <td>@item.Member?.FullName</td>
-                    <td>
-                        <form asp-action="Approve" asp-route-id="@item.BorrowingId" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-success">Approve</button>
-                        </form>
-                        <form asp-action="Reject" asp-route-id="@item.BorrowingId" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-danger">Reject</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<dl class="row">
+    <dt class="col-sm-3">Book</dt>
+    <dd class="col-sm-9">@Model.Book?.Title</dd>
+    <dt class="col-sm-3">Member</dt>
+    <dd class="col-sm-9">@Model.Member?.FullName</dd>
+</dl>
+
+<form asp-action="Approve" method="post">
+    <input type="hidden" name="id" value="@Model.BorrowingId" />
+
+    <div class="form-group mb-3">
+        <label for="dueDate">Due Date</label>
+        <input type="date" name="dueDate" id="dueDate" class="form-control" value="@DateTime.Today.AddDays(14).ToString("yyyy-MM-dd")" required />
+    </div>
+
+    <button type="submit" class="btn btn-success">Confirm Approval</button>
+    <a asp-action="PendingRequests" class="btn btn-secondary">Cancel</a>
+</form>
