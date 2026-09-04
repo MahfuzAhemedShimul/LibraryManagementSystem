@@ -82,6 +82,18 @@ namespace LibraryManagementSystem.Controllers
 
             if (borrowing == null || borrowing.Status != "Requested") return NotFound();
 
+            // Max 5 active borrowings per member (re-checked at approval time)
+            var activeCount = await _context.Borrowings
+                .CountAsync(b => b.MemberId == borrowing.MemberId &&
+                                  b.BorrowingId != borrowing.BorrowingId &&
+                                  b.Status == "Borrowed");
+
+            if (activeCount >= 5)
+            {
+                TempData["Error"] = "This member already has 5 active borrowings. Cannot approve until one is returned.";
+                return RedirectToAction(nameof(PendingRequests));
+            }
+
             if (borrowing.Book!.AvailableCopies <= 0)
             {
                 TempData["Error"] = "No available copies left to approve this request.";
@@ -192,6 +204,20 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction("Details", "Books", new { id });
             }
 
+            var memberId = _userManager.GetUserId(User);
+
+            // Block if member already has this same book requested/borrowed
+            var alreadyHasBook = await _context.Borrowings.AnyAsync(b =>
+                b.MemberId == memberId &&
+                b.BookId == id &&
+                (b.Status == "Requested" || b.Status == "Borrowed"));
+
+            if (alreadyHasBook)
+            {
+                TempData["Error"] = "You already have this book requested or borrowed.";
+                return RedirectToAction("Details", "Books", new { id });
+            }
+
             return View(book);
         }
 
@@ -211,6 +237,29 @@ namespace LibraryManagementSystem.Controllers
             }
 
             var memberId = _userManager.GetUserId(User);
+
+            // Block if member already has this same book requested/borrowed
+            var alreadyHasBook = await _context.Borrowings.AnyAsync(b =>
+                b.MemberId == memberId &&
+                b.BookId == id &&
+                (b.Status == "Requested" || b.Status == "Borrowed"));
+
+            if (alreadyHasBook)
+            {
+                TempData["Error"] = "You already have this book requested or borrowed.";
+                return RedirectToAction("Details", "Books", new { id });
+            }
+
+            // Max 5 active borrowings per member
+            var activeCount = await _context.Borrowings
+                .CountAsync(b => b.MemberId == memberId &&
+                                  (b.Status == "Requested" || b.Status == "Borrowed"));
+
+            if (activeCount >= 5)
+            {
+                TempData["Error"] = "You already have 5 active borrowings. Return a book before requesting another.";
+                return RedirectToAction("Details", "Books", new { id });
+            }
 
             var borrowing = new Borrowing
             {

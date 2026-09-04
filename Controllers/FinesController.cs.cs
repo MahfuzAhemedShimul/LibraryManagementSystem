@@ -46,6 +46,20 @@ namespace LibraryManagementSystem.Controllers
 
             return View(fine);
         }
+        // GET: Fines/Receipt/5
+        public async Task<IActionResult> Receipt(int id)
+        {
+            var fine = await _context.Fines
+                .Include(f => f.Borrowing)
+                    .ThenInclude(b => b.Book)
+                .Include(f => f.Borrowing)
+                    .ThenInclude(b => b.Member)
+                .FirstOrDefaultAsync(f => f.FineId == id);
+
+            if (fine == null) return NotFound();
+
+            return View(fine);
+        }
 
         // POST: Fines/Pay/5
         [HttpPost, ActionName("Pay")]

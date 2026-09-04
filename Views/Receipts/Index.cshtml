@@ -1,0 +1,128 @@
+﻿@using LibraryManagementSystem.Models
+@{
+    ViewData["Title"] = "Receipts";
+    var borrowings = ViewBag.Borrowings as List<Borrowing>;
+    var purchases = ViewBag.Purchases as List<Purchase>;
+    var fines = ViewBag.Fines as List<Fine>;
+}
+
+<h1>Receipts</h1>
+<p class="text-muted">Select a category, then generate or download a receipt.</p>
+
+<ul class="nav nav-tabs mb-3" id="receiptTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="borrow-tab" data-bs-toggle="tab" data-bs-target="#borrow-pane" type="button">
+            <i class="bi bi-journal-text"></i> Borrowings
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="purchase-tab" data-bs-toggle="tab" data-bs-target="#purchase-pane" type="button">
+            <i class="bi bi-bag-check"></i> Purchases
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="fine-tab" data-bs-toggle="tab" data-bs-target="#fine-pane" type="button">
+            <i class="bi bi-cash-coin"></i> Fines
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="receiptTabsContent">
+
+    <!-- Borrowings -->
+    <div class="tab-pane fade show active" id="borrow-pane" role="tabpanel">
+        @if (borrowings == null || !borrowings.Any())
+        {
+            <p><em>No borrowings available for receipts.</em></p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr><th>Book</th><th>Member</th><th>Status</th><th>Due Date</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in borrowings)
+                    {
+                        <tr>
+                            <td>@item.Book?.Title</td>
+                            <td>@item.Member?.FullName</td>
+                            <td>@item.Status</td>
+                            <td>@item.DueDate.ToShortDateString()</td>
+                            <td>
+                                <a asp-controller="Borrowings" asp-action="Receipt" asp-route-id="@item.BorrowingId" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-receipt"></i> Receipt
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <!-- Purchases -->
+    <div class="tab-pane fade" id="purchase-pane" role="tabpanel">
+        @if (purchases == null || !purchases.Any())
+        {
+            <p><em>No confirmed purchases available for receipts.</em></p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr><th>Book</th><th>Member</th><th>Price</th><th>Date</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in purchases)
+                    {
+                        <tr>
+                            <td>@item.Book?.Title</td>
+                            <td>@item.Member?.FullName</td>
+                            <td>@("৳" + item.PricePaid.ToString("N2"))</td>
+                            <td>@item.PurchaseDate.ToShortDateString()</td>
+                            <td>
+                                <a asp-controller="Purchases" asp-action="Receipt" asp-route-id="@item.PurchaseId" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-receipt"></i> Receipt
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <!-- Fines -->
+    <div class="tab-pane fade" id="fine-pane" role="tabpanel">
+        @if (fines == null || !fines.Any())
+        {
+            <p><em>No paid fines available for receipts.</em></p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr><th>Book</th><th>Member</th><th>Amount</th><th>Paid Date</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in fines)
+                    {
+                        <tr>
+                            <td>@item.Borrowing?.Book?.Title</td>
+                            <td>@item.Borrowing?.Member?.FullName</td>
+                            <td>@("৳" + item.Amount.ToString("N2"))</td>
+                            <td>@(item.PaidDate?.ToShortDateString() ?? "-")</td>
+                            <td>
+                                <a asp-controller="Fines" asp-action="Receipt" asp-route-id="@item.FineId" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-receipt"></i> Receipt
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+</div>

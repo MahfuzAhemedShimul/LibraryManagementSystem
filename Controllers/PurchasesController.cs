@@ -25,6 +25,32 @@ namespace LibraryManagementSystem.Controllers
         {
             if (id == null) return NotFound();
 
+            var memberId = _userManager.GetUserId(User);
+
+            // Block purchase if member has an overdue borrowing
+            var hasOverdue = await _context.Borrowings.AnyAsync(b =>
+                b.MemberId == memberId &&
+                b.Status == "Borrowed" &&
+                b.DueDate.Date < DateTime.Today);
+
+            if (hasOverdue)
+            {
+                TempData["Error"] = "You have an overdue book. Please return it before purchasing a book.";
+                return RedirectToAction("Details", "Books", new { id });
+            }
+
+            // Block if member already purchased (or has a pending purchase for) this same book
+            var alreadyPurchased = await _context.Purchases.AnyAsync(p =>
+                p.MemberId == memberId &&
+                p.BookId == id &&
+                (p.Status == "Pending" || p.Status == "Confirmed"));
+
+            if (alreadyPurchased)
+            {
+                TempData["Error"] = "You have already purchased or requested to purchase this book.";
+                return RedirectToAction("Details", "Books", new { id });
+            }
+
             var book = await _context.Books
                 .Include(b => b.Author)
                 .FirstOrDefaultAsync(b => b.BookId == id);
@@ -45,6 +71,32 @@ namespace LibraryManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BuyConfirmed(int id)
         {
+            var memberId = _userManager.GetUserId(User);
+
+            // Re-check on POST too, in case they bypass the GET page
+            var hasOverdue = await _context.Borrowings.AnyAsync(b =>
+                b.MemberId == memberId &&
+                b.Status == "Borrowed" &&
+                b.DueDate.Date < DateTime.Today);
+
+            if (hasOverdue)
+            {
+                TempData["Error"] = "You have an overdue book. Please return it before purchasing a book.";
+                return RedirectToAction("Details", "Books", new { id });
+            }
+
+            // Re-check on POST too
+            var alreadyPurchased = await _context.Purchases.AnyAsync(p =>
+                p.MemberId == memberId &&
+                p.BookId == id &&
+                (p.Status == "Pending" || p.Status == "Confirmed"));
+
+            if (alreadyPurchased)
+            {
+                TempData["Error"] = "You have already purchased or requested to purchase this book.";
+                return RedirectToAction("Details", "Books", new { id });
+            }
+
             var book = await _context.Books.FindAsync(id);
             if (book == null) return NotFound();
             if (book.AvailableCopies <= 0)
@@ -52,8 +104,6 @@ namespace LibraryManagementSystem.Controllers
                 TempData["Error"] = "Sorry, this book is currently out of stock.";
                 return RedirectToAction("Details", "Books", new { id });
             }
-
-            var memberId = _userManager.GetUserId(User);
 
             var purchase = new Purchase
             {
@@ -142,7 +192,33 @@ namespace LibraryManagementSystem.Controllers
 
             return View(purchase);
         }
+        // GET: Purchases/Receipt/5
+        [Authorize(Roles = "Admin,Librarian,Staff")]
+        public async Task<IActionResult> Receipt(int id)
+        {
+            var purchase = await _context.Purchases
+                .Include(p => p.Book)
+                    .ThenInclude(b => b!.Author)
+                .Include(p => p.Member)
+                .Include(p => p.ApprovedByStaff)
+                .FirstOrDefaultAsync(p => p.PurchaseId == id);
 
+            if (purchase == null) return NotFound();
+
+            return View(purchase);
+        }
+        // GET: Purchases (Admin/Librarian/Staff — full history)
+        [Authorize(Roles = "Admin,Librarian,Staff")]
+        public async Task<IActionResult> Index()
+        {
+            var purchases = await _context.Purchases
+                .Include(p => p.Book)
+                .Include(p => p.Member)
+                .OrderByDescending(p => p.PurchaseDate)
+                .ToListAsync();
+
+            return View(purchases);
+        }
         // GET: Purchases/MyPurchases (Member)
         [Authorize(Roles = "Member")]
         public async Task<IActionResult> MyPurchases()

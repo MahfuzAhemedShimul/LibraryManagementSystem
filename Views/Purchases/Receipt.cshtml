@@ -1,0 +1,116 @@
+﻿@model LibraryManagementSystem.Models.Purchase
+
+@{
+    ViewData["Title"] = "Purchase Receipt";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Purchase Receipt #@Model.PurchaseId</title>
+    <style>
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                margin: 40px;
+                color: #222;
+            }
+
+            .receipt-box {
+                max-width: 600px;
+                margin: auto;
+                border: 1px solid #ddd;
+                padding: 30px;
+                border-radius: 8px;
+            }
+
+            .header {
+                text-align: center;
+                border-bottom: 2px solid #333;
+                padding-bottom: 12px;
+                margin-bottom: 20px;
+            }
+
+                .header h2 {
+                    margin: 0;
+                }
+
+            .row {
+                display: flex;
+                justify-content: space-between;
+                padding: 6px 0;
+                border-bottom: 1px dashed #eee;
+            }
+
+            .label {
+                color: #666;
+            }
+
+            .total {
+                font-weight: bold;
+                font-size: 1.1em;
+                margin-top: 10px;
+            }
+
+            .actions {
+                text-align: center;
+                margin-top: 25px;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                border-radius: 5px;
+                text-decoration: none;
+                margin: 0 5px;
+                border: none;
+                cursor: pointer;
+            }
+
+            .btn-print {
+                background: #198754;
+                color: white;
+            }
+
+            .btn-back {
+                background: #6c757d;
+                color: white;
+            }
+
+            @@media print {
+                .actions {
+                    display: none;
+                }
+
+                body {
+                    margin: 0;
+                }
+
+                .receipt-box {
+                    border: none;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="receipt-box">
+        <div class="header">
+            <h2>📚 Library Purchase Receipt</h2>
+            <div>Receipt #@Model.PurchaseId</div>
+        </div>
+
+        <div class="row"><span class="label">Book</span><span>@Model.Book?.Title</span></div>
+        <div class="row"><span class="label">Author</span><span>@Model.Book?.Author?.Name</span></div>
+        <div class="row"><span class="label">Member</span><span>@Model.Member?.FullName</span></div>
+        <div class="row"><span class="label">Approved By</span><span>@(Model.ApprovedByStaff?.FullName ?? "—")</span></div>
+        <div class="row"><span class="label">Purchase Date</span><span>@Model.PurchaseDate.ToShortDateString()</span></div>
+        <div class="row"><span class="label">Status</span><span>@Model.Status</span></div>
+        <div class="row total"><span class="label">Price Paid</span><span>৳@Model.PricePaid</span></div>
+
+        <div class="actions">
+            <button class="btn btn-print" onclick="window.print()">⬇ Download / Print PDF</button>
+            <a class="btn btn-back" href="javascript:window.close()">Close</a>
+        </div>
+    </div>
+</body>
+</html>

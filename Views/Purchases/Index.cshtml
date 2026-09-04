@@ -1,0 +1,50 @@
+﻿@model IEnumerable<LibraryManagementSystem.Models.Purchase>
+
+@{
+    ViewData["Title"] = "Purchase History";
+}
+
+<h1>Purchase History</h1>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (!Model.Any())
+{
+    <p><em>No purchases yet.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Book</th>
+                <th>Member</th>
+                <th>Price</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Book?.Title</td>
+                    <td>@item.Member?.FullName</td>
+                    <td>@("৳" + item.PricePaid.ToString("N2"))</td>
+                    <td>@item.PurchaseDate.ToShortDateString()</td>
+                    <td>@item.Status</td>
+                    <td>
+                        @if (item.Status == "Confirmed")
+                        {
+                            <a asp-action="Receipt" asp-route-id="@item.PurchaseId" class="btn btn-outline-secondary btn-sm">Receipt</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
