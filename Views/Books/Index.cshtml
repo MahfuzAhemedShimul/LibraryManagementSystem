@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Books";
+    var groupedByCategory = Model
+        .GroupBy(b => b.Category?.Name ?? "Uncategorized")
+        .OrderBy(g => g.Key);
 }
 
 <h1>Books</h1>
@@ -20,68 +23,61 @@
     </div>
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Category</th>
-            @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
-            {
-                <th>ISBN</th>
-                <th>Total Copies</th>
-                <th>Available Copies</th>
-            }
-            <th>Price</th>
-            @if (User.Identity != null && User.Identity.IsAuthenticated)
-            {
-                <th></th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Title</td>
-                <td>@item.Author?.Name</td>
-                <td>@item.Category?.Name</td>
-                @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
-                {
-                    <td>@item.ISBN</td>
-                    <td>@item.TotalCopies</td>
-                    <td>@item.AvailableCopies</td>
-                }
-                <td>@("৳" + item.Price.ToString("N2"))</td>
-                @if (User.Identity != null && User.Identity.IsAuthenticated)
-                {
-                    <td>
-                        @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-                        {
-                            <a asp-action="Edit" asp-route-id="@item.BookId" class="btn btn-sm btn-secondary">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@item.BookId" class="btn btn-sm btn-danger">Delete</a>
+@foreach (var categoryGroup in groupedByCategory)
+{
+    <div class="mt-4 mb-5">
+        <h3 class="mb-3 border-bottom pb-2">@categoryGroup.Key</h3>
 
-                        }
-                        @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
-                        {
-                            <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
-                        }
-                        @if (User.IsInRole("Member"))
-                        {
-                            <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
-                            @if (item.AvailableCopies > 0)
+        <div class="row g-4">
+            @foreach (var item in categoryGroup)
+            {
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="card h-100 book-grid-card">
+                        <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://via.placeholder.com/200x280?text=No+Cover" : item.ImageUrl)"
+                             class="card-img-top"
+                             style="height: 220px; object-fit: cover;"
+                             alt="@item.Title" />
+                        <div class="card-body p-2">
+                            <p class="mb-1 fw-bold small book-grid-title">@item.Title</p>
+                            <p class="mb-1 text-muted small">@item.Author?.Name</p>
+                            <p class="mb-2 small">@("৳" + item.Price.ToString("N2"))</p>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
                             {
-                                <a asp-controller="Borrowings" asp-action="Request" asp-route-id="@item.BookId" class="btn btn-sm btn-primary">Request</a>
-                                <a asp-controller="Purchases" asp-action="Buy" asp-route-id="@item.BookId" class="btn btn-sm btn-success">Buy</a>
+                                <p class="mb-1 small text-muted">
+                                    ISBN: @item.ISBN<br />
+                                    Available: @item.AvailableCopies / @item.TotalCopies
+                                </p>
                             }
-                            else
-                            {
-                                <button class="btn btn-sm btn-secondary" disabled>Out of Stock</button>
-                            }
-                        }
-                    </td>
-                }
-            </tr>
-        }
-    </tbody>
-</table>
+
+                            <div class="d-grid gap-1">
+                                @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("Staff"))
+                                {
+                                    <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
+                                }
+                                @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.BookId" class="btn btn-sm btn-secondary">Edit</a>
+                                    <a asp-action="Delete" asp-route-id="@item.BookId" class="btn btn-sm btn-danger">Delete</a>
+                                }
+                                @if (User.IsInRole("Member"))
+                                {
+                                    <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
+                                    @if (item.AvailableCopies > 0)
+                                    {
+                                        <a asp-controller="Borrowings" asp-action="Request" asp-route-id="@item.BookId" class="btn btn-sm btn-primary">Request</a>
+                                        <a asp-controller="Purchases" asp-action="Buy" asp-route-id="@item.BookId" class="btn btn-sm btn-success">Buy</a>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-secondary" disabled>Out of Stock</button>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}

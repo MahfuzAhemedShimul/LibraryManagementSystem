@@ -46,7 +46,8 @@ namespace LibraryManagementSystem.Controllers
                 $"- \"{b.Title}\" by {b.Author} ({b.Category}) - {b.AvailableCopies} copies available"));
 
             var systemPrompt =
-                "You are a helpful library assistant for a university library system. " +
+                "You are Nexus, the helpful AI library assistant for MAS Library BD, a university library system. " +
+                "If asked your name, say your name is Nexus. " +
                 "Only answer questions about the library, books, borrowing, fines, and how to use this system. " +
                 "If asked something unrelated, politely say you can only help with library-related questions. " +
                 "Here is the current book catalog you can reference:\n" + bookListText;
@@ -75,7 +76,7 @@ namespace LibraryManagementSystem.Controllers
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    return Json(new { reply = "Sorry, the AI assistant is unavailable right now." });
+                    return Json(new { reply = "Sorry, Nexus is unavailable right now." });
                 }
 
                 using var doc = JsonDocument.Parse(responseText);
@@ -89,7 +90,7 @@ namespace LibraryManagementSystem.Controllers
             }
             catch (Exception)
             {
-                return Json(new { reply = "Sorry, something went wrong contacting the AI assistant." });
+                return Json(new { reply = "Sorry, something went wrong contacting Nexus." });
             }
         }
     }

@@ -1,8 +1,8 @@
 ﻿@{
-    ViewData["Title"] = "Library Assistant";
+    ViewData["Title"] = "Nexus";
 }
 
-<h1>Library Assistant</h1>
+<h1>Nexus</h1>
 <p>Ask me about books, borrowing, or how to use the library system.</p>
 
 <div id="chatBox" style="border:1px solid #ccc; border-radius:8px; padding:15px; height:400px; overflow-y:auto; background:#f8f9fa;"></div>
@@ -31,7 +31,7 @@
             appendMessage('You', message);
             inputBox.value = '';
 
-            appendMessage('Assistant', '...typing');
+            appendMessage('Nexus', '...typing');
 
             const response = await fetch('/Chat/Ask', {
                 method: 'POST',
@@ -42,7 +42,7 @@
             const data = await response.json();
 
             const chatBox = document.getElementById('chatBox');
-            chatBox.lastChild.innerHTML = `<strong>Assistant:</strong> ${data.reply}`;
+            chatBox.lastChild.innerHTML = `<strong>Nexus:</strong> ${data.reply}`;
         }
 
         document.getElementById('userInput').addEventListener('keypress', function(e) {
