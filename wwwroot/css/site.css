@@ -425,3 +425,6 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+body {
+    background-color: #d9e5df;
+}
