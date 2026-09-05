@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.Controllers
 {
@@ -14,11 +15,13 @@ namespace LibraryManagementSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly AiApprovalService _aiApprovalService;
 
-        public BorrowingsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public BorrowingsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, AiApprovalService aiApprovalService)
         {
             _context = context;
             _userManager = userManager;
+            _aiApprovalService = aiApprovalService;
         }
 
         // GET: Borrowings (Admin/Librarian only — full history)
@@ -261,20 +264,46 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction("Details", "Books", new { id });
             }
 
+            // NEW: AI-based auto-approval decision (Gemini API, with safe fallback to manual review)
+            var hasUnpaidFines = await _context.Fines
+                .Include(f => f.Borrowing)
+                .AnyAsync(f => f.Borrowing.MemberId == memberId && !f.IsPaid);
+
+            var hasOverdue = await _context.Borrowings.AnyAsync(b =>
+                b.MemberId == memberId &&
+                b.Status == "Borrowed" &&
+                b.DueDate.Date < DateTime.Today);
+
+            var decision = await _aiApprovalService.DecideAsync(new AiApprovalService.ApprovalContext
+            {
+                ActiveBorrowingsCount = activeCount,
+                HasUnpaidFines = hasUnpaidFines,
+                HasOverdueBook = hasOverdue,
+                BookTitle = book.Title
+            });
+
             var borrowing = new Borrowing
             {
                 BookId = book.BookId,
                 MemberId = memberId!,
                 IssuedByStaffId = null,
-                IssueDate = DateTime.Today, // placeholder until approved
-                DueDate = DateTime.Today,   // placeholder until approved
-                Status = "Requested"
+                IssueDate = DateTime.Today,
+                DueDate = decision.Approve ? DateTime.Today.AddDays(14) : DateTime.Today,
+                Status = decision.Approve ? "Borrowed" : "Requested"
             };
+
+            if (decision.Approve)
+            {
+                book.AvailableCopies -= 1;
+            }
 
             _context.Borrowings.Add(borrowing);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Your request to borrow \"{book.Title}\" has been submitted and is awaiting staff approval.";
+            TempData["Success"] = decision.Approve
+                ? $"AI auto-approved your request for \"{book.Title}\": {decision.Reason} Due back on {borrowing.DueDate.ToShortDateString()}."
+                : $"Your request for \"{book.Title}\" needs manual review: {decision.Reason}";
+
             return RedirectToAction("MyBorrowings");
         }
 

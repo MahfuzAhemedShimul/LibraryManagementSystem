@@ -1,0 +1,44 @@
+﻿@model IEnumerable<LibraryManagementSystem.Models.Fine>
+
+@{
+    ViewData["Title"] = "My Fines";
+}
+
+<h1>My Fines</h1>
+
+@if (!Model.Any())
+{
+    <p><em>You have no fines.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Book</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Paid Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var rowClass = item.IsPaid ? "" : "table-danger";
+                <tr class="@rowClass">
+                    <td>@item.Borrowing?.Book?.Title</td>
+                    <td>@("৳" + item.Amount.ToString("N2"))</td>
+                    <td>@(item.IsPaid ? "Paid" : "Unpaid")</td>
+                    <td>@(item.PaidDate.HasValue ? item.PaidDate.Value.ToShortDateString() : "-")</td>
+                    <td>
+                        @if (item.IsPaid)
+                        {
+                            <a asp-action="Receipt" asp-route-id="@item.FineId" class="btn btn-sm btn-outline-secondary">Receipt</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,9 +1,8 @@
 ﻿using LibraryManagementSystem.Data;
-using LibraryManagementSystem.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LibraryManagementSystem.Controllers
 {
@@ -11,15 +10,13 @@ namespace LibraryManagementSystem.Controllers
     public class FinesController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
 
-        public FinesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public FinesController(ApplicationDbContext context)
         {
             _context = context;
-            _userManager = userManager;
         }
 
-        // GET: Fines (Admin/Librarian/Staff — all fines)
+        // GET: Fines (Admin/Librarian/Staff — full list)
         [Authorize(Roles = "Admin,Librarian,Staff")]
         public async Task<IActionResult> Index()
         {
@@ -69,11 +66,11 @@ namespace LibraryManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Fines/MyFines (Member — their own fines, current + history)
+        // GET: Fines/MyFines (Member) — their own fine history (paid + unpaid)
         [Authorize(Roles = "Member")]
         public async Task<IActionResult> MyFines()
         {
-            var memberId = _userManager.GetUserId(User);
+            var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var fines = await _context.Fines
                 .Include(f => f.Borrowing)
@@ -85,8 +82,8 @@ namespace LibraryManagementSystem.Controllers
             return View(fines);
         }
 
-        // GET: Fines/Receipt/5 (Admin/Librarian/Staff, or the Member who owns this fine)
-        [Authorize]
+        // GET: Fines/Receipt/5
+        [Authorize(Roles = "Admin,Librarian,Staff,Member")]
         public async Task<IActionResult> Receipt(int id)
         {
             var fine = await _context.Fines
@@ -98,11 +95,12 @@ namespace LibraryManagementSystem.Controllers
 
             if (fine == null) return NotFound();
 
-            // If the current user is a Member, only let them view their own receipt
+            // Members can only view their own paid fine receipt
             if (User.IsInRole("Member"))
             {
-                var memberId = _userManager.GetUserId(User);
+                var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (fine.Borrowing?.MemberId != memberId) return Forbid();
+                if (!fine.IsPaid) return Forbid();
             }
 
             return View(fine);

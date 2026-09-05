@@ -1,5 +1,6 @@
 using LibraryManagementSystem.Data;
 using LibraryManagementSystem.Models;
+using LibraryManagementSystem.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
+
+// NEW: named HttpClient for the Gemini AI approval service
+builder.Services.AddHttpClient("Groq", client =>
+{
+    client.BaseAddress = new Uri("https://api.groq.com/openai/v1/");
+});
+
+// NEW: register the AI approval service
+builder.Services.AddScoped<AiApprovalService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
