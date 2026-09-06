@@ -2,51 +2,453 @@
     ViewData["Title"] = "Nexus";
 }
 
-<h1>Nexus</h1>
-<p>Ask me about books, borrowing, or how to use the library system.</p>
+<div class="nexus-page">
 
-<div id="chatBox" style="border:1px solid #ccc; border-radius:8px; padding:15px; height:400px; overflow-y:auto; background:#f8f9fa;"></div>
+    <div class="nexus-overlay"></div>
 
-<div class="input-group mt-3">
-    <input type="text" id="userInput" class="form-control" placeholder="Type your question..." />
-    <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+    <div class="nexus-content">
+
+        <!-- Nexus Header -->
+        <div class="nexus-header text-center">
+
+            <div class="nexus-icon">
+                <i class="bi bi-robot"></i>
+            </div>
+
+            <h1>Nexus AI</h1>
+
+            <p>
+                Your intelligent library assistant
+            </p>
+
+            <small>
+                Ask me about books, borrowing, recommendations,
+                or how to use the library system.
+            </small>
+
+        </div>
+
+
+        <!-- Chat Box -->
+        <div id="chatBox" class="nexus-chat-box">
+
+            <div class="nexus-welcome">
+
+                <i class="bi bi-stars"></i>
+
+                <h3>Hello! I'm Nexus 👋</h3>
+
+                <p>
+                    How can I help you with the library today?
+                </p>
+
+                <div class="suggestions">
+
+                    <button onclick="useSuggestion('Recommend me a book')">
+                        📚 Recommend a book
+                    </button>
+
+                    <button onclick="useSuggestion('How can I borrow a book?')">
+                        📖 How do I borrow?
+                    </button>
+
+                    <button onclick="useSuggestion('What books are available?')">
+                        🔎 Available books
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Input -->
+        <div class="nexus-input">
+
+            <input type="text"
+                   id="userInput"
+                   class="form-control"
+                   placeholder="Ask Nexus about the library..." />
+
+            <button class="btn btn-primary"
+                    onclick="sendMessage()">
+
+                <i class="bi bi-send-fill"></i>
+                Send
+
+            </button>
+
+        </div>
+
+        <div class="nexus-note">
+            <i class="bi bi-stars"></i>
+            Powered by Nexus AI
+        </div>
+
+    </div>
+
 </div>
 
-@section Scripts {
-    <script>
-        function appendMessage(sender, text) {
-            const chatBox = document.getElementById('chatBox');
-            const msg = document.createElement('div');
-            msg.className = 'mb-2';
-            msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
-            chatBox.appendChild(msg);
-            chatBox.scrollTop = chatBox.scrollHeight;
+
+<style>
+
+    /* ==========================================
+           NEXUS PAGE BACKGROUND
+           ========================================== */
+
+    .nexus-page {
+        position: relative;
+        min-height: 100vh;
+        margin-left: -12px;
+        margin-right: -12px;
+        padding: 40px 20px;
+        background-image: url('/images/library-hero-bg.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        overflow: hidden;
+    }
+
+
+    /* Dark overlay */
+
+    .nexus-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(8, 25, 35, 0.65);
+        z-index: 0;
+    }
+
+
+    /* Main content */
+
+    .nexus-content {
+        position: relative;
+        z-index: 1;
+        max-width: 950px;
+        margin: auto;
+    }
+
+
+    /* ==========================================
+           HEADER
+           ========================================== */
+
+    .nexus-header {
+        color: white;
+        margin-bottom: 25px;
+    }
+
+
+    .nexus-icon {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 20px;
+        background: #198754;
+        font-size: 34px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+
+    .nexus-header h1 {
+        font-size: 38px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+
+    .nexus-header p {
+        font-size: 19px;
+        margin-bottom: 5px;
+    }
+
+
+    .nexus-header small {
+        opacity: 0.8;
+    }
+
+
+    /* ==========================================
+           CHAT BOX
+           ========================================== */
+
+    .nexus-chat-box {
+        height: 430px;
+        overflow-y: auto;
+        padding: 25px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+
+
+    /* Welcome */
+
+    .nexus-welcome {
+        text-align: center;
+        margin-top: 70px;
+        color: #495057;
+    }
+
+
+        .nexus-welcome > i {
+            font-size: 45px;
+            color: #198754;
         }
+
+
+        .nexus-welcome h3 {
+            color: #1b3347;
+            font-weight: 700;
+            margin-top: 15px;
+        }
+
+
+    /* ==========================================
+           SUGGESTIONS
+           ========================================== */
+
+    .suggestions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+
+        .suggestions button {
+            border: 1px solid #d9e2e7;
+            background: white;
+            color: #1b3347;
+            padding: 9px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+
+            .suggestions button:hover {
+                background: #e8f7ef;
+                border-color: #198754;
+                transform: translateY(-2px);
+            }
+
+
+    /* ==========================================
+           INPUT
+           ========================================== */
+
+    .nexus-input {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        padding: 10px;
+        background: rgba(255,255,255,0.97);
+        border-radius: 14px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    }
+
+
+        .nexus-input input {
+            border: none;
+            box-shadow: none;
+            padding: 12px;
+            font-size: 15px;
+        }
+
+
+            .nexus-input input:focus {
+                border: none;
+                box-shadow: none;
+            }
+
+
+        .nexus-input button {
+            padding: 0 25px;
+            border-radius: 9px;
+            font-weight: 600;
+        }
+
+
+    /* ==========================================
+           FOOTER NOTE
+           ========================================== */
+
+    .nexus-note {
+        text-align: center;
+        color: rgba(255,255,255,0.75);
+        font-size: 12px;
+        margin-top: 12px;
+    }
+
+
+    /* ==========================================
+           CHAT MESSAGES
+           ========================================== */
+
+    .nexus-message {
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        border-radius: 12px;
+        background: #f1f3f5;
+        line-height: 1.5;
+    }
+
+
+    /* ==========================================
+           MOBILE
+           ========================================== */
+
+    @@media (max-width: 768px) {
+
+        .nexus-page {
+            margin-left: -12px;
+            margin-right: -12px;
+            padding: 25px 12px;
+            background-attachment: scroll;
+        }
+
+
+        .nexus-header h1 {
+            font-size: 30px;
+        }
+
+
+        .nexus-chat-box {
+            height: 430px;
+            padding: 15px;
+        }
+
+
+        .nexus-input {
+            padding: 7px;
+        }
+
+
+            .nexus-input button {
+                padding: 0 15px;
+            }
+    }
+
+</style>
+
+
+@section Scripts {
+
+    <script>
+
+        function appendMessage(sender, text) {
+
+            const chatBox =
+                document.getElementById('chatBox');
+
+            const msg =
+                document.createElement('div');
+
+            msg.className = 'nexus-message';
+
+            msg.innerHTML =
+                `<strong>${sender}:</strong> ${text}`;
+
+            chatBox.appendChild(msg);
+
+            chatBox.scrollTop =
+                chatBox.scrollHeight;
+        }
+
+
+        function useSuggestion(text) {
+
+            const inputBox =
+                document.getElementById('userInput');
+
+            inputBox.value = text;
+
+            inputBox.focus();
+
+        }
+
 
         async function sendMessage() {
-            const inputBox = document.getElementById('userInput');
-            const message = inputBox.value.trim();
+
+            const inputBox =
+                document.getElementById('userInput');
+
+            const message =
+                inputBox.value.trim();
+
             if (!message) return;
 
+
             appendMessage('You', message);
+
             inputBox.value = '';
 
-            appendMessage('Nexus', '...typing');
 
-            const response = await fetch('/Chat/Ask', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: message })
-            });
+            appendMessage(
+                'Nexus',
+                '...typing'
+            );
 
-            const data = await response.json();
 
-            const chatBox = document.getElementById('chatBox');
-            chatBox.lastChild.innerHTML = `<strong>Nexus:</strong> ${data.reply}`;
+            const response =
+                await fetch('/Chat/Ask', {
+
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body: JSON.stringify({
+                        message: message
+                    })
+
+                });
+
+
+            const data =
+                await response.json();
+
+
+            const chatBox =
+                document.getElementById('chatBox');
+
+
+            chatBox.lastChild.innerHTML =
+                `<strong>Nexus:</strong> ${data.reply}`;
+
+
+            chatBox.scrollTop =
+                chatBox.scrollHeight;
+
         }
 
-        document.getElementById('userInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendMessage();
-        });
+
+        document
+            .getElementById('userInput')
+            .addEventListener('keypress', function(e) {
+
+                if (e.key === 'Enter') {
+
+                    sendMessage();
+
+                }
+
+            });
+
     </script>
+
 }

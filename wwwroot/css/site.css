@@ -509,3 +509,444 @@ body {
     max-width: 420px;
     width: 100%;
 }
+
+/* =========================================
+   PUBLIC HOMEPAGE BACKGROUND
+   ========================================= */
+
+.public-homepage {
+    position: relative;
+    min-height: 100vh;
+    margin-left: -12px;
+    margin-right: -12px;
+    padding: 25px;
+    background-image: url('/images/library-hero-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    overflow: hidden;
+}
+
+.homepage-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(13, 30, 42, 0.78);
+    z-index: 0;
+}
+
+.homepage-content {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* HERO */
+
+.home-hero-bg {
+    padding: 80px 20px !important;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 18px;
+    color: white;
+}
+
+    .home-hero-bg h1 {
+        font-size: 52px;
+        font-weight: 800;
+        color: white;
+        margin-top: 12px;
+    }
+
+    .home-hero-bg .lead {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 20px;
+    }
+
+.hero-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+
+/* STATISTICS */
+
+.stat-box {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 14px;
+    padding: 25px 15px;
+    min-height: 130px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+    transition: transform 0.2s ease;
+}
+
+    .stat-box:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-box h3 {
+        margin-top: 8px;
+        margin-bottom: 0;
+    }
+
+    .stat-box p {
+        color: #666;
+        margin-bottom: 0;
+    }
+
+
+/* =========================================
+   NEXUS AI
+   ========================================= */
+
+.nexus-section {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    padding: 35px 40px;
+    border-radius: 18px;
+    background: linear-gradient( 135deg, rgba(18, 45, 64, 0.97), rgba(25, 91, 76, 0.97) );
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.nexus-icon {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 42px;
+}
+
+.nexus-content {
+    flex: 1;
+}
+
+.nexus-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    opacity: 0.75;
+}
+
+.nexus-content h2 {
+    margin: 5px 0 10px;
+    font-size: 32px;
+    font-weight: 800;
+}
+
+    .nexus-content h2 span {
+        color: #58d68d;
+    }
+
+.nexus-content p {
+    max-width: 750px;
+    margin-bottom: 15px;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.nexus-features {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+    .nexus-features span {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .nexus-features i {
+        margin-right: 5px;
+    }
+
+.nexus-action {
+    flex-shrink: 0;
+}
+
+.nexus-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 15px 25px;
+    background: #18a765;
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+    .nexus-button:hover {
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+
+/* FEATURE CARDS */
+
+.feature-card {
+    height: 100%;
+    padding: 30px 25px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    transition: all 0.2s ease;
+}
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .feature-card > i {
+        font-size: 42px;
+        color: #087f5b;
+        margin-bottom: 15px;
+    }
+
+    .feature-card h5 {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .feature-card p {
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .feature-card a {
+        color: #087f5b;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+    .public-homepage {
+        padding: 15px;
+        background-attachment: scroll;
+    }
+
+    .home-hero-bg {
+        padding: 55px 15px !important;
+    }
+
+        .home-hero-bg h1 {
+            font-size: 38px;
+        }
+
+    .nexus-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 30px 20px;
+    }
+
+    .nexus-features {
+        justify-content: center;
+    }
+
+    .nexus-action {
+        margin-top: 10px;
+    }
+}
+
+/* ==========================================
+   BOOK SEARCH SECTION
+   ========================================== */
+
+.book-search-section {
+    margin: 0 -12px;
+    padding: 38px 20px 42px;
+    background: linear-gradient( 135deg, #edf5f1 0%, #dcebe5 100% );
+    border-top: 3px solid #1b3347;
+    border-bottom: 1px solid #d3e0da;
+}
+
+
+.search-content {
+    max-width: 920px;
+    margin: 0 auto;
+}
+
+
+/* HEADER */
+
+.search-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 14px;
+}
+
+
+.search-icon {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    background: #1b3347;
+    color: white;
+    font-size: 23px;
+    box-shadow: 0 6px 18px rgba(27, 51, 71, 0.2);
+}
+
+
+.search-header h2 {
+    margin: 0;
+    color: #1b3347;
+    font-size: 25px;
+    font-weight: 800;
+}
+
+
+.search-header p {
+    margin: 3px 0 0;
+    color: #61736d;
+    font-size: 14px;
+}
+
+
+/* CLOCK */
+
+.current-time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-bottom: 17px;
+    color: #526b78;
+    font-size: 13px;
+}
+
+
+    .current-time i {
+        color: #198754;
+    }
+
+
+/* SEARCH BAR */
+
+.book-search {
+    display: flex;
+    gap: 10px;
+    padding: 7px;
+    background: white;
+    border: 1px solid #d6e1dc;
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(27, 51, 71, 0.12);
+}
+
+
+.search-input-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+
+    .search-input-wrapper i {
+        position: absolute;
+        left: 18px;
+        color: #7a8b86;
+        font-size: 17px;
+    }
+
+
+.book-search-input {
+    width: 100%;
+    height: 52px;
+    padding: 0 20px 0 48px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #1b3347;
+    font-size: 15px;
+}
+
+
+    .book-search-input::placeholder {
+        color: #8a9894;
+    }
+
+
+    .book-search-input:focus {
+        outline: none;
+    }
+
+
+/* BUTTON */
+
+.book-search-button {
+    min-width: 115px;
+    border: none;
+    border-radius: 10px;
+    background: #1b3347;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+
+    .book-search-button:hover {
+        background: #198754;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(25, 135, 84, 0.25);
+    }
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .book-search-section {
+        padding: 30px 15px;
+    }
+
+    .search-header {
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+        .search-header h2 {
+            font-size: 21px;
+        }
+
+        .search-header p {
+            font-size: 12px;
+        }
+
+    .book-search {
+        flex-direction: column;
+    }
+
+    .book-search-button {
+        width: 100%;
+        height: 48px;
+    }
+}
