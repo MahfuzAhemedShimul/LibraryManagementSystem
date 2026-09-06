@@ -58,7 +58,7 @@ namespace LibraryManagementSystem.Controllers
 
             var requestBody = new
             {
-                model = "llama-3.1-8b-instant",
+                model = "openai/gpt-oss-20b",
                 messages = new object[]
                 {
                     new { role = "system", content = systemPrompt },
@@ -76,7 +76,8 @@ namespace LibraryManagementSystem.Controllers
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    return Json(new { reply = "Sorry, Nexus is unavailable right now." });
+                    // TEMPORARY: show the real error so we can diagnose it
+                    return Json(new { reply = $"DEBUG ERROR ({(int)response.StatusCode}): {responseText}" });
                 }
 
                 using var doc = JsonDocument.Parse(responseText);
@@ -88,9 +89,10 @@ namespace LibraryManagementSystem.Controllers
 
                 return Json(new { reply });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Json(new { reply = "Sorry, something went wrong contacting Nexus." });
+                // TEMPORARY: show the real exception so we can diagnose it
+                return Json(new { reply = $"DEBUG EXCEPTION: {ex.Message}" });
             }
         }
     }

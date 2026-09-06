@@ -495,5 +495,72 @@
 
     @await RenderSectionAsync("Scripts", required: false)
 
+    <!-- Floating Nexus Chat Widget -->
+    <div id="nexusWidget">
+        <button id="nexusToggleBtn" class="nexus-toggle-btn">
+            <i class="bi bi-chat-dots-fill"></i>
+        </button>
+
+        <div id="nexusPanel" class="nexus-panel d-none">
+            <div class="nexus-panel-header">
+                <span><i class="bi bi-robot"></i> Nexus</span>
+                <button id="nexusCloseBtn" class="btn-close btn-close-white"></button>
+            </div>
+            <div id="nexusChatBox" class="nexus-chat-box"></div>
+            <div class="nexus-input-row">
+                <input type="text" id="nexusUserInput" class="form-control" placeholder="Ask Nexus..." />
+                <button id="nexusSendBtn" class="btn btn-primary btn-sm">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const nexusToggleBtn = document.getElementById('nexusToggleBtn');
+        const nexusPanel = document.getElementById('nexusPanel');
+        const nexusCloseBtn = document.getElementById('nexusCloseBtn');
+        const nexusChatBox = document.getElementById('nexusChatBox');
+        const nexusUserInput = document.getElementById('nexusUserInput');
+        const nexusSendBtn = document.getElementById('nexusSendBtn');
+
+        nexusToggleBtn.addEventListener('click', () => {
+        nexusPanel.classList.toggle('d-none');
+        });
+
+        nexusCloseBtn.addEventListener('click', () => {
+        nexusPanel.classList.add('d-none');
+        });
+
+        function appendNexusMessage(sender, text) {
+        const msg = document.createElement('div');
+        msg.className = 'mb-2';
+        msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        nexusChatBox.appendChild(msg);
+        nexusChatBox.scrollTop = nexusChatBox.scrollHeight;
+        }
+
+        async function sendNexusMessage() {
+        const message = nexusUserInput.value.trim();
+        if (!message) return;
+
+        appendNexusMessage('You', message);
+        nexusUserInput.value = '';
+        appendNexusMessage('Nexus', '...typing');
+
+        const response = await fetch('/Chat/Ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+        });
+
+        const data = await response.json();
+        nexusChatBox.lastChild.innerHTML = `<strong>Nexus:</strong> ${data.reply}`;
+        }
+
+        nexusSendBtn.addEventListener('click', sendNexusMessage);
+        nexusUserInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendNexusMessage();
+        });
+    </script>
+
 </body>
 </html>
