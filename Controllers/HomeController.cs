@@ -22,6 +22,9 @@ namespace LibraryManagementSystem.Controllers
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
+                var currentUser = await _userManager.GetUserAsync(User);
+                ViewBag.CurrentUserFullName = currentUser?.FullName;
+
                 if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
                 {
                     ViewBag.TotalBooks = await _context.Books.CountAsync();
@@ -53,6 +56,32 @@ namespace LibraryManagementSystem.Controllers
                     ViewBag.MyUnpaidFines = await _context.Fines
                         .Include(f => f.Borrowing).ThenInclude(b => b.Book)
                         .Where(f => !f.IsPaid && f.Borrowing.MemberId == memberId)
+                        .ToListAsync();
+
+                    var borrowedCategoryIds = await _context.Borrowings
+                        .Where(b => b.MemberId == memberId)
+                        .Select(b => b.Book!.CategoryId)
+                        .Distinct()
+                        .ToListAsync();
+
+                    var purchasedCategoryIds = await _context.Purchases
+                        .Where(p => p.MemberId == memberId)
+                        .Select(p => p.Book!.CategoryId)
+                        .Distinct()
+                        .ToListAsync();
+
+                    var interestedCategoryIds = borrowedCategoryIds.Union(purchasedCategoryIds).ToList();
+
+                    var alreadyHaveBookIds = (await _context.Borrowings
+                        .Where(b => b.MemberId == memberId).Select(b => b.BookId).ToListAsync())
+                        .Union(await _context.Purchases
+                        .Where(p => p.MemberId == memberId).Select(p => p.BookId).ToListAsync())
+                        .ToList();
+
+                    ViewBag.RecommendedBooks = await _context.Books
+                        .Include(b => b.Author)
+                        .Where(b => interestedCategoryIds.Contains(b.CategoryId) && !alreadyHaveBookIds.Contains(b.BookId))
+                        .Take(8)
                         .ToListAsync();
                 }
             }

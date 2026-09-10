@@ -28,6 +28,8 @@ namespace LibraryManagementSystem.Models
         // "Pending", "Confirmed", "Rejected"
         public string Status { get; set; } = "Pending";
 
+        public string PaymentMethod { get; set; } = "Cash";
+
         public string? ApprovedByStaffId { get; set; }
 
         [ForeignKey("ApprovedByStaffId")]

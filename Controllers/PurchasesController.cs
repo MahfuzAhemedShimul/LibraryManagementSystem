@@ -27,7 +27,6 @@ namespace LibraryManagementSystem.Controllers
 
             var memberId = _userManager.GetUserId(User);
 
-            // Block purchase if member has an overdue borrowing
             var hasOverdue = await _context.Borrowings.AnyAsync(b =>
                 b.MemberId == memberId &&
                 b.Status == "Borrowed" &&
@@ -39,7 +38,6 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction("Details", "Books", new { id });
             }
 
-            // Block if member already purchased (or has a pending purchase for) this same book
             var alreadyPurchased = await _context.Purchases.AnyAsync(p =>
                 p.MemberId == memberId &&
                 p.BookId == id &&
@@ -65,15 +63,14 @@ namespace LibraryManagementSystem.Controllers
             return View(book);
         }
 
-        // POST: Purchases/Buy/5 (Member) — creates a pending purchase, doesn't deduct stock yet
+        // POST: Purchases/Buy/5 (Member) — auto-confirms if no unpaid fines/overdue, else goes to Pending
         [HttpPost, ActionName("Buy")]
         [Authorize(Roles = "Member")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BuyConfirmed(int id)
+        public async Task<IActionResult> BuyConfirmed(int id, string paymentMethod)
         {
             var memberId = _userManager.GetUserId(User);
 
-            // Re-check on POST too, in case they bypass the GET page
             var hasOverdue = await _context.Borrowings.AnyAsync(b =>
                 b.MemberId == memberId &&
                 b.Status == "Borrowed" &&
@@ -85,7 +82,6 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction("Details", "Books", new { id });
             }
 
-            // Re-check on POST too
             var alreadyPurchased = await _context.Purchases.AnyAsync(p =>
                 p.MemberId == memberId &&
                 p.BookId == id &&
@@ -105,19 +101,34 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction("Details", "Books", new { id });
             }
 
+            bool hasUnpaidFines = await _context.Fines
+                .AnyAsync(f => !f.IsPaid && f.Borrowing.MemberId == memberId);
+
+            bool autoApprove = !hasUnpaidFines && !hasOverdue;
+
             var purchase = new Purchase
             {
                 BookId = book.BookId,
                 MemberId = memberId!,
                 PricePaid = book.Price,
                 PurchaseDate = DateTime.Today,
-                Status = "Pending"
+                PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? "Cash" : paymentMethod,
+                Status = autoApprove ? "Confirmed" : "Pending"
             };
+
+            if (autoApprove)
+            {
+                book.AvailableCopies -= 1;
+                book.TotalCopies -= 1;
+            }
 
             _context.Purchases.Add(purchase);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Your purchase request for \"{book.Title}\" has been submitted and is awaiting staff confirmation.";
+            TempData["Success"] = autoApprove
+                ? $"Your purchase of \"{book.Title}\" was automatically confirmed!"
+                : $"Your purchase request for \"{book.Title}\" has been submitted and is awaiting staff confirmation.";
+
             return RedirectToAction(nameof(MyPurchases));
         }
 
@@ -192,6 +203,7 @@ namespace LibraryManagementSystem.Controllers
 
             return View(purchase);
         }
+
         // GET: Purchases/Receipt/5
         [Authorize(Roles = "Admin,Librarian,Staff")]
         public async Task<IActionResult> Receipt(int id)
@@ -207,6 +219,7 @@ namespace LibraryManagementSystem.Controllers
 
             return View(purchase);
         }
+
         // GET: Purchases (Admin/Librarian/Staff — full history)
         [Authorize(Roles = "Admin,Librarian,Staff")]
         public async Task<IActionResult> Index()
@@ -219,6 +232,7 @@ namespace LibraryManagementSystem.Controllers
 
             return View(purchases);
         }
+
         // GET: Purchases/MyPurchases (Member)
         [Authorize(Roles = "Member")]
         public async Task<IActionResult> MyPurchases()

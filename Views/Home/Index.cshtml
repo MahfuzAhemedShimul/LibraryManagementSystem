@@ -1,26 +1,53 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+
+    // Safely retrieve and cast collections from ViewBag
+    var featuredBooks = ViewBag.FeaturedBooks as List<LibraryManagementSystem.Models.Book> ?? new List<LibraryManagementSystem.Models.Book>();
+    var popularBooks = ViewBag.PopularBooks as List<LibraryManagementSystem.Models.Book> ?? new List<LibraryManagementSystem.Models.Book>();
+    var trendingBooks = ViewBag.TrendingBooks as List<LibraryManagementSystem.Models.Book> ?? new List<LibraryManagementSystem.Models.Book>();
+    var recommendedBooks = ViewBag.RecommendedBooks as List<LibraryManagementSystem.Models.Book> ?? new List<LibraryManagementSystem.Models.Book>();
+
+    var myPendingRequests = ViewBag.MyPendingRequests as List<LibraryManagementSystem.Models.Borrowing> ?? new List<LibraryManagementSystem.Models.Borrowing>();
+    var myActiveBorrowings = ViewBag.MyActiveBorrowings as List<LibraryManagementSystem.Models.Borrowing> ?? new List<LibraryManagementSystem.Models.Borrowing>();
+    var myUnpaidFines = ViewBag.MyUnpaidFines as List<LibraryManagementSystem.Models.Fine> ?? new List<LibraryManagementSystem.Models.Fine>();
+}
+
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <div class="mb-3 text-center">
+        @if (User.IsInRole("Admin"))
+        {
+            <h5 class="text-muted mb-1">Admin Panel</h5>
+        }
+        else if (User.IsInRole("Librarian"))
+        {
+            <h5 class="text-muted mb-1">Librarian Panel</h5>
+        }
+        else if (User.IsInRole("Staff"))
+        {
+            <h5 class="text-muted mb-1">Staff Panel</h5>
+        }
+        else if (User.IsInRole("Member"))
+        {
+            <h5 class="text-muted mb-1">Member Panel</h5>
+        }
+        <h3 class="fw-bold">Welcome, @ViewBag.CurrentUserFullName</h3>
+    </div>
 }
 
 <!-- =========================================
-     BOOK SEARCH
+     BOOK SEARCH SECTION
      ========================================= -->
-
 <section class="book-search-section">
-
     <div class="search-content">
-
         <div class="search-header">
-
             <div class="search-icon">
                 <i class="bi bi-book-half"></i>
             </div>
-
             <div>
                 <h2>Find Your Next Book</h2>
                 <p>Search our library collection by title or ISBN</p>
             </div>
-
         </div>
 
         <div class="current-time">
@@ -28,55 +55,47 @@
             <span id="liveDateTime"></span>
         </div>
 
-        <form asp-controller="Books"
-              asp-action="Index"
-              method="get"
-              class="book-search">
-
+        <form asp-controller="Books" asp-action="Index" method="get" class="book-search">
             <div class="search-input-wrapper">
-
                 <i class="bi bi-search"></i>
-
                 <input type="text"
                        name="searchString"
                        class="book-search-input"
                        placeholder="Search by book title or ISBN..."
                        autocomplete="off" />
-
             </div>
-
-            <button type="submit"
-                    class="book-search-button">
-
+            <button type="submit" class="book-search-button">
                 <i class="bi bi-search"></i>
                 <span>Search</span>
-
             </button>
-
         </form>
 
+        @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Member"))
+        {
+            <!-- MEMBER ACTION BUTTONS (MOVED JUST AFTER SEARCH BOX) -->
+            <div class="mt-3 d-flex justify-content-center gap-2">
+                <a asp-controller="Books" asp-action="Index" class="btn btn-primary">Browse Books</a>
+                <a asp-controller="Chat" asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-robot"></i> Ask Nexus
+                </a>
+            </div>
+        }
     </div>
-
 </section>
 
-
-@if (User.Identity != null &&
-     User.Identity.IsAuthenticated &&
-     (User.IsInRole("Admin") || User.IsInRole("Librarian")))
+@if (User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Librarian")))
 {
     <!-- =========================================
          ADMIN / LIBRARIAN DASHBOARD
          ========================================= -->
-
-    <h1>@(User.IsInRole("Admin") ? "Admin" : "Librarian") Dashboard</h1>
+    <h1 class="text-center">@(User.IsInRole("Admin") ? "Admin" : "Librarian") Dashboard</h1>
 
     <div class="row mt-4">
-
         <div class="col-md-3 mb-3">
             <div class="card text-white bg-primary">
                 <div class="card-body">
                     <h5 class="card-title">Total Books</h5>
-                    <p class="card-text display-6">@ViewBag.TotalBooks</p>
+                    <p class="card-text display-6">@(ViewBag.TotalBooks ?? 0)</p>
                 </div>
             </div>
         </div>
@@ -85,7 +104,7 @@
             <div class="card text-white bg-success">
                 <div class="card-body">
                     <h5 class="card-title">Total Members</h5>
-                    <p class="card-text display-6">@ViewBag.TotalMembers</p>
+                    <p class="card-text display-6">@(ViewBag.TotalMembers ?? 0)</p>
                 </div>
             </div>
         </div>
@@ -94,7 +113,7 @@
             <div class="card text-white bg-info">
                 <div class="card-body">
                     <h5 class="card-title">Active Borrowings</h5>
-                    <p class="card-text display-6">@ViewBag.ActiveBorrowings</p>
+                    <p class="card-text display-6">@(ViewBag.ActiveBorrowings ?? 0)</p>
                 </div>
             </div>
         </div>
@@ -103,23 +122,19 @@
             <div class="card text-white bg-danger">
                 <div class="card-body">
                     <h5 class="card-title">Overdue Books</h5>
-                    <p class="card-text display-6">@ViewBag.OverdueCount</p>
+                    <p class="card-text display-6">@(ViewBag.OverdueCount ?? 0)</p>
                 </div>
             </div>
         </div>
-
     </div>
 
-
     <div class="row">
-
         <div class="col-md-4 mb-3">
             <div class="card text-white bg-warning">
                 <div class="card-body">
                     <h5 class="card-title">Unpaid Fines Total</h5>
-
                     <p class="card-text display-6">
-                        @("৳" + ((decimal)ViewBag.UnpaidFinesTotal).ToString("N2"))
+                        @("৳" + ((decimal)(ViewBag.UnpaidFinesTotal ?? 0m)).ToString("N2"))
                     </p>
                 </div>
             </div>
@@ -129,69 +144,32 @@
             <div class="card text-white bg-secondary">
                 <div class="card-body">
                     <h5 class="card-title">Pending Requests</h5>
-                    <p class="card-text display-6">
-                        @ViewBag.PendingRequestsCount
-                    </p>
+                    <p class="card-text display-6">@(ViewBag.PendingRequestsCount ?? 0)</p>
                 </div>
             </div>
         </div>
-
     </div>
-
 
     <div class="mt-3">
-
-        @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-        {
-            <a asp-controller="Books"
-               asp-action="Create"
-               class="btn btn-primary">
-                Add New Book
-            </a>
-        }
-
-        <a asp-controller="Borrowings"
-           asp-action="PendingRequests"
-           class="btn btn-secondary">
-            Review Requests
-        </a>
-
-        <a asp-controller="Borrowings"
-           asp-action="Issue"
-           class="btn btn-secondary">
-            Issue a Book
-        </a>
-
-        <a asp-controller="Reports"
-           asp-action="Index"
-           class="btn btn-outline-secondary">
-            View Reports
-        </a>
-
+        <a asp-controller="Books" asp-action="Create" class="btn btn-primary">Add New Book</a>
+        <a asp-controller="Borrowings" asp-action="PendingRequests" class="btn btn-secondary">Review Requests</a>
+        <a asp-controller="Borrowings" asp-action="Issue" class="btn btn-secondary">Issue a Book</a>
+        <a asp-controller="Reports" asp-action="Index" class="btn btn-outline-secondary">View Reports</a>
     </div>
 }
-
-
-else if (User.Identity != null &&
-         User.Identity.IsAuthenticated &&
-         User.IsInRole("Staff"))
+else if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Staff"))
 {
     <!-- =========================================
          STAFF DASHBOARD
          ========================================= -->
-
-    <h1>Staff Dashboard</h1>
+    <h1 class="text-center">Staff Dashboard</h1>
 
     <div class="row mt-4">
-
         <div class="col-md-4 mb-3">
             <div class="card text-white bg-secondary">
                 <div class="card-body">
                     <h5 class="card-title">Pending Requests</h5>
-
-                    <p class="card-text display-6">
-                        @ViewBag.PendingRequestsCount
-                    </p>
+                    <p class="card-text display-6">@(ViewBag.PendingRequestsCount ?? 0)</p>
                 </div>
             </div>
         </div>
@@ -200,816 +178,375 @@ else if (User.Identity != null &&
             <div class="card text-white bg-warning">
                 <div class="card-body">
                     <h5 class="card-title">Unpaid Fines</h5>
-
-                    <p class="card-text display-6">
-                        @ViewBag.UnpaidFinesCount
-                    </p>
+                    <p class="card-text display-6">@(ViewBag.UnpaidFinesCount ?? 0)</p>
                 </div>
             </div>
         </div>
-
     </div>
-
 
     <div class="mt-3">
-
-        <a asp-controller="Borrowings"
-           asp-action="PendingRequests"
-           class="btn btn-primary">
-            Review Requests
-        </a>
-
-        <a asp-controller="Borrowings"
-           asp-action="Issue"
-           class="btn btn-secondary">
-            Issue a Book
-        </a>
-
-        <a asp-controller="Fines"
-           asp-action="Index"
-           class="btn btn-outline-secondary">
-            Collect Fines
-        </a>
-
+        <a asp-controller="Borrowings" asp-action="PendingRequests" class="btn btn-primary">Review Requests</a>
+        <a asp-controller="Borrowings" asp-action="Issue" class="btn btn-secondary">Issue a Book</a>
+        <a asp-controller="Fines" asp-action="Index" class="btn btn-outline-secondary">Collect Fines</a>
     </div>
 }
-
-
-else if (User.Identity != null &&
-         User.Identity.IsAuthenticated &&
-         User.IsInRole("Member"))
+else if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Member"))
 {
     <!-- =========================================
          MEMBER DASHBOARD
          ========================================= -->
+    <h1 class="text-center mt-4">My Dashboard</h1>
 
-    <h1>My Dashboard</h1>
-
-
+    <!-- MY PENDING REQUESTS -->
     <h4 class="mt-4">My Pending Requests</h4>
-
-    @if (((List<LibraryManagementSystem.Models.Borrowing>)ViewBag.MyPendingRequests).Count == 0)
+    @if (!myPendingRequests.Any())
     {
-        <p>
-            <em>No pending requests.</em>
-        </p>
+        <p><em>No pending requests.</em></p>
     }
     else
     {
         <table class="table">
-
             <thead>
                 <tr>
                     <th>Book</th>
                     <th>Status</th>
                 </tr>
             </thead>
-
             <tbody>
-
-                @foreach (var r in
-                    (List<LibraryManagementSystem.Models.Borrowing>)
-                    ViewBag.MyPendingRequests)
+                @foreach (var r in myPendingRequests)
                 {
                     <tr>
-
-                        <td>
-                            @r.Book?.Title
-                        </td>
-
-                        <td>
-                            Awaiting Approval
-                        </td>
-
+                        <td>@(r.Book?.Title ?? "N/A")</td>
+                        <td>Awaiting Approval</td>
                     </tr>
                 }
-
             </tbody>
-
         </table>
     }
 
-
+    <!-- MY ACTIVE BORROWINGS -->
     <h4 class="mt-4">My Active Borrowings</h4>
-
-    @if (((List<LibraryManagementSystem.Models.Borrowing>)ViewBag.MyActiveBorrowings).Count == 0)
+    @if (!myActiveBorrowings.Any())
     {
-        <p>
-            <em>You have no books currently borrowed.</em>
-        </p>
+        <p><em>You have no books currently borrowed.</em></p>
     }
     else
     {
         <table class="table">
-
             <thead>
                 <tr>
                     <th>Book</th>
                     <th>Due Date</th>
                 </tr>
             </thead>
-
             <tbody>
-
-                @foreach (var b in
-                    (List<LibraryManagementSystem.Models.Borrowing>)
-                    ViewBag.MyActiveBorrowings)
+                @foreach (var b in myActiveBorrowings)
                 {
                     <tr>
-
-                        <td>
-                            @b.Book?.Title
-                        </td>
-
-                        <td>
-                            @b.DueDate.ToShortDateString()
-                        </td>
-
+                        <td>@(b.Book?.Title ?? "N/A")</td>
+                        <td>@b.DueDate.ToShortDateString()</td>
                     </tr>
                 }
-
             </tbody>
-
         </table>
     }
 
-
+    <!-- MY UNPAID FINES -->
     <h4 class="mt-4">My Unpaid Fines</h4>
-
-    @if (((List<LibraryManagementSystem.Models.Fine>)ViewBag.MyUnpaidFines).Count == 0)
+    @if (!myUnpaidFines.Any())
     {
-        <p>
-            <em>You have no unpaid fines.</em>
-        </p>
+        <p><em>You have no unpaid fines.</em></p>
     }
     else
     {
         <table class="table">
-
             <thead>
                 <tr>
                     <th>Book</th>
                     <th>Amount</th>
                 </tr>
             </thead>
-
             <tbody>
-
-                @foreach (var f in
-                    (List<LibraryManagementSystem.Models.Fine>)
-                    ViewBag.MyUnpaidFines)
+                @foreach (var f in myUnpaidFines)
                 {
                     <tr>
-
-                        <td>
-                            @f.Borrowing?.Book?.Title
-                        </td>
-
-                        <td>
-                            @("৳" + f.Amount.ToString("N2"))
-                        </td>
-
+                        <td>@(f.Borrowing?.Book?.Title ?? "N/A")</td>
+                        <td>@("৳" + f.Amount.ToString("N2"))</td>
                     </tr>
                 }
-
             </tbody>
-
         </table>
     }
 
+    <!-- RECOMMENDED BOOKS -->
+    @if (recommendedBooks.Any())
+    {
+        <div class="mt-4 book-carousel-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">
+                    <i class="bi bi-stars text-warning"></i>
+                    Recommended for You
+                </h4>
+            </div>
+            <p class="text-muted small">Based on the books you have borrowed and purchased.</p>
 
-    <div class="mt-3">
-
-        <a asp-controller="Books"
-           asp-action="Index"
-           class="btn btn-primary">
-            Browse Books
-        </a>
-
-        <a asp-controller="Chat"
-           asp-action="Index"
-           class="btn btn-outline-secondary">
-            <i class="bi bi-robot"></i>
-            Ask Nexus
-        </a>
-
-    </div>
+            <div class="book-carousel">
+                @foreach (var book in recommendedBooks)
+                {
+                    <div class="book-card">
+                        <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId">
+                            <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "https://via.placeholder.com/200x300?text=No+Cover" : book.ImageUrl)"
+                                 class="book-cover"
+                                 alt="@book.Title" />
+                        </a>
+                        <p class="book-title mt-2 mb-0">@book.Title</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 }
-
-
 else
 {
     <!-- =========================================
          PUBLIC HOMEPAGE
          ========================================= -->
-
     <div class="public-homepage">
-
-        <!-- Background Overlay -->
         <div class="homepage-overlay"></div>
-
-
         <div class="homepage-content">
 
-
-            <!-- =================================
-                 HERO SECTION
-                 ================================= -->
-
+            <!-- HERO SECTION -->
             <div class="text-center py-5 home-hero-bg">
-
                 <span class="hero-badge">
-
-                    <i class="bi bi-book"></i>
-
-                    MAS LIBRARY BD
-
+                    <i class="bi bi-book"></i> MAS LIBRARY BD
                 </span>
 
-
-                <h1 class="display-4">
-
-                    Discover. Borrow. Learn.
-
-                </h1>
-
-
-                <p class="lead">
-
-                    Your smart digital library for finding books,
-                    borrowing and learning.
-
-                </p>
-
+                <h1 class="display-4">Discover. Borrow. Learn.</h1>
+                <p class="lead">Your smart digital library for finding books, borrowing and learning.</p>
 
                 <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
-
-
-                    <a asp-controller="Books"
-                       asp-action="Index"
-                       class="btn btn-primary btn-lg px-4 py-3 shadow">
-
-                        <i class="bi bi-book"></i>
-
-                        Browse Books
-
+                    <a asp-controller="Books" asp-action="Index" class="btn btn-primary btn-lg px-4 py-3 shadow">
+                        <i class="bi bi-book"></i> Browse Books
                     </a>
-
-
-                    <a asp-controller="Home"
-                       asp-action="BecomeAMember"
-                       class="btn btn-success btn-lg px-4 py-3 shadow">
-
-                        <i class="bi bi-person-plus"></i>
-
-                        Become a Member
-
+                    <a asp-controller="Home" asp-action="BecomeAMember" class="btn btn-success btn-lg px-4 py-3 shadow">
+                        <i class="bi bi-person-plus"></i> Become a Member
                     </a>
-
-
                 </div>
-
             </div>
 
-
-
-            <!-- =================================
-                 QUICK STATISTICS
-                 ================================= -->
-
+            <!-- QUICK STATISTICS -->
             <div class="row text-center mt-4 gy-3">
-
-
                 <div class="col-6 col-md-3">
-
                     <div class="stat-box">
-
                         <i class="bi bi-book display-6 text-primary"></i>
-
-                        <h3>
-                            @ViewBag.PublicTotalBooks
-                        </h3>
-
-                        <p>
-                            Books
-                        </p>
-
+                        <h3>@(ViewBag.PublicTotalBooks ?? 0)</h3>
+                        <p>Books</p>
                     </div>
-
                 </div>
 
-
                 <div class="col-6 col-md-3">
-
                     <div class="stat-box">
-
                         <i class="bi bi-tags display-6 text-primary"></i>
-
-                        <h3>
-                            @ViewBag.PublicTotalCategories
-                        </h3>
-
-                        <p>
-                            Categories
-                        </p>
-
+                        <h3>@(ViewBag.PublicTotalCategories ?? 0)</h3>
+                        <p>Categories</p>
                     </div>
-
                 </div>
 
-
                 <div class="col-6 col-md-3">
-
                     <div class="stat-box">
-
                         <i class="bi bi-person-badge display-6 text-primary"></i>
-
-                        <h3>
-                            @ViewBag.PublicTotalAuthors
-                        </h3>
-
-                        <p>
-                            Authors
-                        </p>
-
+                        <h3>@(ViewBag.PublicTotalAuthors ?? 0)</h3>
+                        <p>Authors</p>
                     </div>
-
                 </div>
-
 
                 <div class="col-6 col-md-3">
-
                     <div class="stat-box">
-
                         <i class="bi bi-people display-6 text-primary"></i>
-
-                        <h3>
-                            @ViewBag.PublicTotalMembers
-                        </h3>
-
-                        <p>
-                            Members
-                        </p>
-
+                        <h3>@(ViewBag.PublicTotalMembers ?? 0)</h3>
+                        <p>Members</p>
                     </div>
-
                 </div>
-
-
             </div>
 
-
-
-            <!-- =================================
-                 NEXUS AI - MAIN FEATURE
-                 ================================= -->
-
+            <!-- NEXUS AI SECTION -->
             <div class="nexus-section mt-5">
-
-
                 <div class="nexus-icon">
-
                     <i class="bi bi-robot"></i>
-
                 </div>
-
 
                 <div class="nexus-content">
-
-                    <span class="nexus-label">
-
-                        SMART LIBRARY ASSISTANT
-
-                    </span>
-
-
-                    <h2>
-
-                        Meet <span>Nexus AI</span>
-
-                    </h2>
-
-
+                    <span class="nexus-label">SMART LIBRARY ASSISTANT</span>
+                    <h2>Meet <span>Nexus AI</span></h2>
                     <p>
-
-                        Your intelligent library assistant.
-                        Ask questions, discover books,
-                        get recommendations, check availability,
-                        and make smarter Borrow-or-Buy decisions.
-
+                        Your intelligent library assistant. Ask questions, discover books,
+                        get recommendations, check availability, and make smarter Borrow-or-Buy decisions.
                     </p>
 
-
                     <div class="nexus-features">
-
-
-                        <span>
-
-                            <i class="bi bi-lightbulb"></i>
-
-                            Recommendations
-
-                        </span>
-
-
-                        <span>
-
-                            <i class="bi bi-search"></i>
-
-                            Smart Search
-
-                        </span>
-
-
-                        <span>
-
-                            <i class="bi bi-journal-check"></i>
-
-                            Borrow or Buy
-
-                        </span>
-
-
+                        <span><i class="bi bi-lightbulb"></i> Recommendations</span>
+                        <span><i class="bi bi-search"></i> Smart Search</span>
+                        <span><i class="bi bi-journal-check"></i> Borrow or Buy</span>
                     </div>
-
                 </div>
-
 
                 <div class="nexus-action">
-
-
-                    <a asp-controller="Chat"
-                       asp-action="Index"
-                       class="nexus-button">
-
-                        <i class="bi bi-robot"></i>
-
-                        Ask Nexus
-
+                    <a asp-controller="Chat" asp-action="Index" class="nexus-button">
+                        <i class="bi bi-robot"></i> Ask Nexus
                     </a>
-
-
                 </div>
-
-
             </div>
 
-
-
-            <!-- =================================
-                 FEATURES
-                 ================================= -->
-
+            <!-- FEATURES -->
             <div class="row mt-5 gy-3">
-
-
-                <!-- FIND BOOK -->
-
                 <div class="col-md-4">
-
                     <div class="feature-card">
-
                         <i class="bi bi-search"></i>
-
-
-                        <h5>
-                            Find Any Book
-                        </h5>
-
-
-                        <p>
-
-                            Search our full catalog
-                            by title, author, or ISBN
-                            in seconds.
-
-                        </p>
-
-
-                        <a asp-controller="Books"
-                           asp-action="Index">
-
-                            Explore Books →
-
-                        </a>
-
+                        <h5>Find Any Book</h5>
+                        <p>Search our full catalog by title, author, or ISBN in seconds.</p>
+                        <a asp-controller="Books" asp-action="Index">Explore Books →</a>
                     </div>
-
                 </div>
 
-
-
-                <!-- BORROW OR BUY -->
-
                 <div class="col-md-4">
-
                     <div class="feature-card">
-
                         <i class="bi bi-journal-check"></i>
-
-
-                        <h5>
-                            Borrow or Buy
-                        </h5>
-
-
-                        <p>
-
-                            Request a book to borrow
-                            or purchase your own copy.
-
-                        </p>
-
+                        <h5>Borrow or Buy</h5>
+                        <p>Request a book to borrow or purchase your own copy.</p>
                     </div>
-
                 </div>
-
-
-
-                <!-- NEXUS AI -->
 
                 <div class="col-md-4">
-
                     <div class="feature-card nexus-mini-card">
-
                         <i class="bi bi-robot"></i>
-
-
-                        <h5>
-                            Nexus AI
-                        </h5>
-
-
-                        <p>
-
-                            Get intelligent answers,
-                            recommendations and
-                            library assistance.
-
-                        </p>
-
-
-                        <a asp-controller="Chat"
-                           asp-action="Index">
-
-                            Try Nexus →
-
-                        </a>
-
+                        <h5>Nexus AI</h5>
+                        <p>Get intelligent answers, recommendations and library assistance.</p>
+                        <a asp-controller="Chat" asp-action="Index">Try Nexus →</a>
                     </div>
-
                 </div>
-
-
             </div>
-
 
         </div>
-
     </div>
 }
-
-
-
-@{
-    var featuredBooks =
-        ViewBag.FeaturedBooks
-        as List<LibraryManagementSystem.Models.Book>;
-
-    var popularBooks =
-        ViewBag.PopularBooks
-        as List<LibraryManagementSystem.Models.Book>;
-
-    var trendingBooks =
-        ViewBag.TrendingBooks
-        as List<LibraryManagementSystem.Models.Book>;
-}
-
-
 
 <!-- =========================================
      NEW ARRIVALS
      ========================================= -->
-@if (featuredBooks != null && featuredBooks.Any())
+@if (featuredBooks.Any())
 {
-
     <div class="mt-5 book-carousel-section">
-
         <div class="d-flex justify-content-between align-items-center mb-3">
-
-            <h3 class="mb-0">
-                New <span class="text-success">Arrivals</span>
-            </h3>
-
-
+            <h3 class="mb-0">New <span class="text-success">Arrivals</span></h3>
             <div>
-
                 <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow"
                         onclick="scrollCarousel('featuredCarousel', -1)">
                     &lt;
                 </button>
-
-
                 <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow"
                         onclick="scrollCarousel('featuredCarousel', 1)">
                     &gt;
                 </button>
-
             </div>
-
         </div>
 
-
-        <div id="featuredCarousel"
-             class="book-carousel">
-
-
+        <div id="featuredCarousel" class="book-carousel">
             @foreach (var book in featuredBooks)
             {
-
                 <div class="book-card">
-
-                    <a asp-controller="Books"
-                       asp-action="Details"
-                       asp-route-id="@book.BookId">
-
-                        <img src="@(string.IsNullOrEmpty(book.ImageUrl)
-                                                                                                                       ? "https://via.placeholder.com/200x300?text=No+Cover"
-                                                                                                                       : book.ImageUrl)"
+                    <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId">
+                        <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "https://via.placeholder.com/200x300?text=No+Cover" : book.ImageUrl)"
                              class="book-cover"
                              alt="@book.Title" />
-
                     </a>
-
-
-                    <p class="book-title mt-2 mb-0">
-                        @book.Title
-                    </p>
-
+                    <p class="book-title mt-2 mb-0">@book.Title</p>
                 </div>
-
             }
-
-
         </div>
-
     </div>
-
 }
-
-
 
 <!-- =========================================
      POPULAR BOOKS
      ========================================= -->
-@if (popularBooks != null && popularBooks.Any())
+@if (popularBooks.Any())
 {
-
     <div class="mt-5 mb-5 book-carousel-section">
-
-
         <div class="d-flex justify-content-between align-items-center mb-3">
-
-            <h3 class="mb-0">
-
-                Popular <span class="text-success">
-                Books
-            </span>
-
-        </h3>
-
-
-        <div>
-
-            <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow"
-                    onclick="scrollCarousel('popularCarousel', -1)">
-                &lt;
-            </button>
-
-
-            <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow"
-                    onclick="scrollCarousel('popularCarousel', 1)">
-                &gt;
-            </button>
-
+            <h3 class="mb-0">Popular <span class="text-success">Books</span></h3>
+            <div>
+                <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow"
+                        onclick="scrollCarousel('popularCarousel', -1)">
+                    &lt;
+                </button>
+                <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow"
+                        onclick="scrollCarousel('popularCarousel', 1)">
+                    &gt;
+                </button>
+            </div>
         </div>
 
+        <div id="popularCarousel" class="book-carousel">
+            @foreach (var book in popularBooks)
+            {
+                <div class="book-card">
+                    <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId">
+                        <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "https://via.placeholder.com/200x300?text=No+Cover" : book.ImageUrl)"
+                             class="book-cover"
+                             alt="@book.Title" />
+                    </a>
+                    <p class="book-title mt-2 mb-0">@book.Title</p>
+                </div>
+            }
+        </div>
     </div>
-
-
-    <div id="popularCarousel"
-         class="book-carousel">
-
-
-        @foreach (var book in popularBooks)
-        {
-
-            <div class="book-card">
-
-                <a asp-controller="Books"
-                   asp-action="Details"
-                   asp-route-id="@book.BookId">
-
-                    <img src="@(string.IsNullOrEmpty(book.ImageUrl)
-                                                                                                           ? "https://via.placeholder.com/200x300?text=No+Cover"
-                                                                                                           : book.ImageUrl)"
-                         class="book-cover"
-                         alt="@book.Title" />
-
-                </a>
-
-
-                <p class="book-title mt-2 mb-0">
-                    @book.Title
-                </p>
-
-            </div>
-
-        }
-
-
-    </div>
-
-</div>
-
 }
 
-
-
 <!-- =========================================
-     TRENDING NOW (auto-calculated from borrows + purchases)
+     TRENDING NOW
      ========================================= -->
-@if (trendingBooks != null && trendingBooks.Any())
+@if (trendingBooks.Any())
 {
-
     <div class="mt-5 mb-5 book-carousel-section">
-
         <div class="d-flex justify-content-between align-items-center mb-3">
-
             <h3 class="mb-0">
                 <i class="bi bi-graph-up-arrow text-danger"></i>
                 Trending <span class="text-success">Now</span>
             </h3>
-
             <div>
-
                 <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow"
                         onclick="scrollCarousel('trendingCarousel', -1)">
                     &lt;
                 </button>
-
                 <button class="btn btn-outline-secondary btn-sm rounded-circle carousel-arrow"
                         onclick="scrollCarousel('trendingCarousel', 1)">
                     &gt;
                 </button>
-
             </div>
-
         </div>
 
         <p class="text-muted small">Based on the most borrowed and purchased books across the library.</p>
 
         <div id="trendingCarousel" class="book-carousel">
-
             @foreach (var book in trendingBooks)
             {
                 <div class="book-card">
-
-                    <a asp-controller="Books"
-                       asp-action="Details"
-                       asp-route-id="@book.BookId">
-
-                        <img src="@(string.IsNullOrEmpty(book.ImageUrl)
-                                                                                                                       ? "https://via.placeholder.com/200x300?text=No+Cover"
-                                                                                                                       : book.ImageUrl)"
+                    <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId">
+                        <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "https://via.placeholder.com/200x300?text=No+Cover" : book.ImageUrl)"
                              class="book-cover"
                              alt="@book.Title" />
-
                     </a>
-
-                    <p class="book-title mt-2 mb-0">
-                        @book.Title
-                    </p>
-
+                    <p class="book-title mt-2 mb-0">@book.Title</p>
                 </div>
             }
-
         </div>
-
     </div>
-
 }
 
-
-
 @section Scripts {
-
     <script>
-
         function updateLiveDateTime() {
-
             const now = new Date();
-
             const options = {
                 weekday: 'long',
                 year: 'numeric',
@@ -1020,41 +557,23 @@ else
                 second: '2-digit'
             };
 
-            const element =
-                document.getElementById('liveDateTime');
-
+            const element = document.getElementById('liveDateTime');
             if (element) {
-
-                element.textContent =
-                    now.toLocaleString('en-US', options);
-
+                element.textContent = now.toLocaleString('en-US', options);
             }
-
         }
 
-
         updateLiveDateTime();
-
         setInterval(updateLiveDateTime, 1000);
 
-
-
         function scrollCarousel(id, direction) {
-
-            const el =
-                document.getElementById(id);
-
+            const el = document.getElementById(id);
             if (el) {
-
                 el.scrollBy({
                     left: direction * 220,
                     behavior: 'smooth'
                 });
-
             }
-
         }
-
     </script>
-
 }
