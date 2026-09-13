@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -88,11 +89,7 @@
 
                 </button>
 
-
-
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-
-
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
 
                     @if (User.Identity == null || !User.Identity.IsAuthenticated)
 
@@ -100,7 +97,7 @@
 
                         <!-- Public Navigation -->
 
-                        <ul class="navbar-nav flex-grow-1">
+                        <ul class="navbar-nav">
 
 
 
@@ -167,7 +164,7 @@
 
                         <!-- Login only, no public Register -->
 
-                        <ul class="navbar-nav">
+                        <ul class="navbar-nav ms-3">
 
 
 
@@ -292,49 +289,15 @@
 
 
                     <li>
-
                         <a asp-controller="Home" asp-action="Index">
-
                             <i class="bi bi-house-door"></i> Home
-
                         </a>
-
                     </li>
 
-
-
                     <li>
-
-                        <a asp-controller="Home" asp-action="About">
-
-                            <i class="bi bi-info-circle"></i> About
-
-                        </a>
-
-                    </li>
-
-
-
-                    <li>
-
-                        <a asp-controller="Home" asp-action="Contact">
-
-                            <i class="bi bi-envelope"></i> Contact
-
-                        </a>
-
-                    </li>
-
-
-
-                    <li>
-
                         <a asp-controller="Books" asp-action="Index">
-
                             <i class="bi bi-book"></i> Books
-
                         </a>
-
                     </li>
 
 
@@ -377,7 +340,7 @@
 
 
 
-                    @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+                    @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
 
                     {
 
@@ -407,7 +370,15 @@
 
                         </li>
 
+                    }
 
+
+
+
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+
+                    {
 
                         <li>
 
@@ -455,11 +426,7 @@
 
 
 
-                    @if (User.IsInRole("Admin") ||
-
-                         User.IsInRole("Librarian") ||
-
-                         User.IsInRole("Staff"))
+                    @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
 
                     {
 
@@ -491,7 +458,13 @@
 
                         </li>
 
+                    }
 
+
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+
+                    {
 
                         <li>
 
@@ -506,7 +479,13 @@
 
                         </li>
 
+                    }
 
+
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+
+                    {
 
                         <li>
 

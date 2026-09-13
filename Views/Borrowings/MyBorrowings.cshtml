@@ -2,6 +2,11 @@
 
 @{
     ViewData["Title"] = "My Borrowings";
+
+    var groupedByBook = Model
+        .GroupBy(b => new { b.BookId, Title = b.Book?.Title ?? "Unknown Book" })
+        .OrderByDescending(g => g.Max(b => b.IssueDate))
+        .ToList();
 }
 
 <h1>My Borrowings</h1>
@@ -11,29 +16,94 @@
     <div class="alert alert-success">@TempData["Success"]</div>
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Book</th>
-            <th>Issue Date</th>
-            <th>Due Date</th>
-            <th>Return Date</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            var isRequested = item.Status == "Requested";
-            var isOverdue = item.Status == "Borrowed" && item.DueDate.Date < DateTime.Today;
-            var rowClass = isRequested ? "table-warning" : item.Status == "Rejected" ? "table-secondary" : isOverdue ? "table-danger" : "";
-            <tr class="@rowClass">
-                <td>@item.Book?.Title</td>
-                <td>@(isRequested ? "-" : item.IssueDate.ToShortDateString())</td>
-                <td>@(isRequested ? "-" : item.DueDate.ToShortDateString())</td>
-                <td>@(item.ReturnDate.HasValue ? item.ReturnDate.Value.ToShortDateString() : "-")</td>
-                <td>@(isOverdue ? "Overdue" : item.Status)</td>
-            </tr>
+<form asp-action="MyBorrowings" method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label class="form-label mb-0">Status</label>
+        <select name="status" class="form-select form-select-sm">
+            <option value="">All</option>
+            <option value="Requested" selected="@(ViewBag.Status == "Requested")">Requested</option>
+            <option value="Borrowed" selected="@(ViewBag.Status == "Borrowed")">Borrowed</option>
+            <option value="Returned" selected="@(ViewBag.Status == "Returned")">Returned</option>
+            <option value="Rejected" selected="@(ViewBag.Status == "Rejected")">Rejected</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <label class="form-label mb-0">From</label>
+        <input type="date" name="fromDate" class="form-control form-control-sm" value="@ViewBag.FromDate" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label mb-0">To</label>
+        <input type="date" name="toDate" class="form-control form-control-sm" value="@ViewBag.ToDate" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+        <a asp-action="MyBorrowings" class="btn btn-outline-secondary btn-sm">Clear</a>
+    </div>
+</form>
+
+@if (!groupedByBook.Any())
+{
+    <p><em>No borrowings match this filter.</em></p>
+}
+else
+{
+    <div class="accordion" id="myBorrowingsAccordion">
+        @{
+            int i = 0;
         }
-    </tbody>
-</table>
+        @foreach (var group in groupedByBook)
+        {
+            i++;
+            var records = group.OrderByDescending(b => b.IssueDate).ToList();
+            var isRequestedAny = records.Any(b => b.Status == "Requested");
+            var isOverdueAny = records.Any(b => b.Status == "Borrowed" && b.DueDate.Date < DateTime.Today);
+            var collapseId = $"myBorrowCollapse{i}";
+            var headingId = $"myBorrowHeading{i}";
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="@headingId">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                        <span class="fw-bold me-2">@group.Key.Title</span>
+                        <span class="badge bg-secondary me-2">@records.Count record@(records.Count > 1 ? "s" : "")</span>
+                        @if (isRequestedAny)
+                        {
+                            <span class="badge bg-warning text-dark me-1">Awaiting Approval</span>
+                        }
+                        @if (isOverdueAny)
+                        {
+                            <span class="badge bg-danger">Overdue</span>
+                        }
+                    </button>
+                </h2>
+                <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headingId" data-bs-parent="#myBorrowingsAccordion">
+                    <div class="accordion-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Issue Date</th>
+                                    <th>Due Date</th>
+                                    <th>Return Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in records)
+                                {
+                                    var isRequested = item.Status == "Requested";
+                                    var isOverdue = item.Status == "Borrowed" && item.DueDate.Date < DateTime.Today;
+                                    var rowClass = isRequested ? "table-warning" : item.Status == "Rejected" ? "table-secondary" : isOverdue ? "table-danger" : "";
+                                    <tr class="@rowClass">
+                                        <td>@(isRequested ? "-" : item.IssueDate.ToShortDateString())</td>
+                                        <td>@(isRequested ? "-" : item.DueDate.ToShortDateString())</td>
+                                        <td>@(item.ReturnDate.HasValue ? item.ReturnDate.Value.ToShortDateString() : "-")</td>
+                                        <td>@(isOverdue ? "Overdue" : item.Status)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,7 +8,6 @@ using LibraryManagementSystem.Data;
 
 namespace LibraryManagementSystem.Controllers
 {
-    [Authorize(Roles = "Admin,Librarian")]
     public class BooksController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -19,7 +19,7 @@ namespace LibraryManagementSystem.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: Books  (public browsing allowed too, so override the class-level restriction here)
+        // GET: Books  (public browsing allowed)
         [AllowAnonymous]
         public async Task<IActionResult> Index(string searchString)
         {
@@ -50,10 +50,51 @@ namespace LibraryManagementSystem.Controllers
 
             if (book == null) return NotFound();
 
+            var comments = await _context.BookComments
+                .Include(c => c.Member)
+                .Where(c => c.BookId == id)
+                .OrderByDescending(c => c.PostedDate)
+                .ToListAsync();
+
+            ViewBag.Comments = comments;
+
             return View(book);
         }
 
+        // POST: Books/PostComment
+        [HttpPost]
+        [Authorize(Roles = "Member")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PostComment(int bookId, string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                TempData["Error"] = "Comment cannot be empty.";
+                return RedirectToAction(nameof(Details), new { id = bookId });
+            }
+
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null) return NotFound();
+
+            var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var comment = new BookComment
+            {
+                BookId = bookId,
+                MemberId = memberId!,
+                Text = text.Trim(),
+                PostedDate = DateTime.Now
+            };
+
+            _context.BookComments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Comment posted.";
+            return RedirectToAction(nameof(Details), new { id = bookId });
+        }
+
         // GET: Books/Create
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         public IActionResult Create()
         {
             ViewBag.AuthorId = new SelectList(_context.Authors, "AuthorId", "Name");
@@ -63,12 +104,13 @@ namespace LibraryManagementSystem.Controllers
 
         // POST: Books/Create
         [HttpPost]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Title,AuthorId,CategoryId,ISBN,TotalCopies,Price,IsFeatured,IsPopular")] Book book, IFormFile? CoverImage)
         {
             if (ModelState.IsValid)
             {
-                book.AvailableCopies = book.TotalCopies; // new books start fully available
+                book.AvailableCopies = book.TotalCopies;
 
                 if (CoverImage != null && CoverImage.Length > 0)
                 {
@@ -86,6 +128,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         // GET: Books/Edit/5
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -100,6 +143,7 @@ namespace LibraryManagementSystem.Controllers
 
         // POST: Books/Edit/5
         [HttpPost]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("BookId,Title,AuthorId,CategoryId,ISBN,TotalCopies,AvailableCopies,Price,IsFeatured,IsPopular,ImageUrl")] Book book, IFormFile? CoverImage)
         {
@@ -113,7 +157,6 @@ namespace LibraryManagementSystem.Controllers
                     {
                         book.ImageUrl = await SaveCoverImage(CoverImage);
                     }
-                    // else: keep whatever ImageUrl was already posted (existing hidden field), so it doesn't get wiped out
 
                     _context.Update(book);
                     await _context.SaveChangesAsync();
@@ -132,6 +175,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         // GET: Books/Delete/5
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -148,6 +192,7 @@ namespace LibraryManagementSystem.Controllers
 
         // POST: Books/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
@@ -161,7 +206,8 @@ namespace LibraryManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Books/ManageFeatured
+        // GET: Books/ManageFeatured  (Admin/Librarian only — not basic catalog CRUD)
+        [Authorize(Roles = "Admin,Librarian")]
         public async Task<IActionResult> ManageFeatured()
         {
             var books = await _context.Books
@@ -174,6 +220,7 @@ namespace LibraryManagementSystem.Controllers
 
         // POST: Books/ManageFeatured
         [HttpPost]
+        [Authorize(Roles = "Admin,Librarian")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ManageFeatured(List<int> featuredIds, List<int> popularIds)
         {

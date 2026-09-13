@@ -6,7 +6,6 @@ using LibraryManagementSystem.Data;
 
 namespace LibraryManagementSystem.Controllers
 {
-    [Authorize(Roles = "Admin,Librarian")]
     public class AuthorsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -33,12 +32,14 @@ namespace LibraryManagementSystem.Controllers
             return View(author);
         }
 
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         public IActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Bio")] Author author)
         {
@@ -51,6 +52,7 @@ namespace LibraryManagementSystem.Controllers
             return View(author);
         }
 
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -62,6 +64,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("AuthorId,Name,Bio")] Author author)
         {
@@ -84,6 +87,7 @@ namespace LibraryManagementSystem.Controllers
             return View(author);
         }
 
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -95,6 +99,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin,Librarian,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

@@ -2,7 +2,12 @@
 
 @{
     ViewData["Title"] = "Member Details";
-    var borrowings = ViewBag.Borrowings as List<LibraryManagementSystem.Models.Borrowing>;
+    var borrowings = ViewBag.Borrowings as List<LibraryManagementSystem.Models.Borrowing> ?? new List<LibraryManagementSystem.Models.Borrowing>();
+
+    var groupedByBook = borrowings
+        .GroupBy(b => new { b.BookId, Title = b.Book?.Title ?? "Unknown Book" })
+        .OrderByDescending(g => g.Max(b => b.IssueDate))
+        .ToList();
 }
 
 <h1>Member Details</h1>
@@ -16,35 +21,63 @@
 
 <h3>Borrowing History</h3>
 
-@if (borrowings == null || !borrowings.Any())
+@if (!groupedByBook.Any())
 {
     <p><em>No borrowing history yet.</em></p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Book</th>
-                <th>Issue Date</th>
-                <th>Due Date</th>
-                <th>Return Date</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var b in borrowings)
-            {
-                <tr>
-                    <td>@b.Book?.Title</td>
-                    <td>@b.IssueDate.ToShortDateString()</td>
-                    <td>@b.DueDate.ToShortDateString()</td>
-                    <td>@(b.ReturnDate.HasValue ? b.ReturnDate.Value.ToShortDateString() : "-")</td>
-                    <td>@b.Status</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="accordion" id="borrowHistoryAccordion">
+        @{
+            int i = 0;
+        }
+        @foreach (var group in groupedByBook)
+        {
+            i++;
+            var records = group.OrderByDescending(b => b.IssueDate).ToList();
+            var activeCount = records.Count(b => b.Status == "Borrowed");
+            var collapseId = $"collapse{i}";
+            var headingId = $"heading{i}";
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="@headingId">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                        <span class="fw-bold me-2">@group.Key.Title</span>
+                        <span class="badge bg-secondary me-2">Borrowed @records.Count time@(records.Count > 1 ? "s" : "")</span>
+                        @if (activeCount > 0)
+                        {
+                            <span class="badge bg-warning text-dark">Currently borrowed</span>
+                        }
+                    </button>
+                </h2>
+                <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headingId" data-bs-parent="#borrowHistoryAccordion">
+                    <div class="accordion-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Issue Date</th>
+                                    <th>Due Date</th>
+                                    <th>Return Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var b in records)
+                                {
+                                    <tr>
+                                        <td>@b.IssueDate.ToShortDateString()</td>
+                                        <td>@b.DueDate.ToShortDateString()</td>
+                                        <td>@(b.ReturnDate.HasValue ? b.ReturnDate.Value.ToShortDateString() : "-")</td>
+                                        <td>@b.Status</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }
 
 <div class="mt-3"><a asp-action="Index">Back to List</a></div>

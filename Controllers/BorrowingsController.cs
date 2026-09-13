@@ -309,15 +309,36 @@ namespace LibraryManagementSystem.Controllers
 
         // GET: Borrowings/MyBorrowings (Member)
         [Authorize(Roles = "Member")]
-        public async Task<IActionResult> MyBorrowings()
+        public async Task<IActionResult> MyBorrowings(string status, DateTime? fromDate, DateTime? toDate)
         {
             var memberId = _userManager.GetUserId(User);
 
-            var borrowings = await _context.Borrowings
+            var query = _context.Borrowings
                 .Include(b => b.Book)
-                .Where(b => b.MemberId == memberId)
+                .Where(b => b.MemberId == memberId);
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(b => b.Status == status);
+            }
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(b => b.IssueDate.Date >= fromDate.Value.Date);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(b => b.IssueDate.Date <= toDate.Value.Date);
+            }
+
+            var borrowings = await query
                 .OrderByDescending(b => b.BorrowingId)
                 .ToListAsync();
+
+            ViewBag.Status = status;
+            ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
 
             return View(borrowings);
         }
@@ -404,8 +425,8 @@ namespace LibraryManagementSystem.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-        // GET: Borrowings/Receipt/5
-        // Admin/Librarian only
+
+        // GET: Borrowings/Receipt/5 (Admin/Librarian only)
         [Authorize(Roles = "Admin,Librarian")]
         public async Task<IActionResult> Receipt(int id)
         {
@@ -426,6 +447,7 @@ namespace LibraryManagementSystem.Controllers
 
             return View(borrowing);
         }
+
         private async Task PopulateDropdowns()
         {
             var books = await _context.Books.Where(b => b.AvailableCopies > 0).ToListAsync();

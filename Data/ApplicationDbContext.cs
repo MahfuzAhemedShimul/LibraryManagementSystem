@@ -18,6 +18,7 @@ namespace LibraryManagementSystem.Data
         public DbSet<Borrowing> Borrowings { get; set; }
         public DbSet<Fine> Fines { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<BookComment> BookComments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -45,6 +46,20 @@ namespace LibraryManagementSystem.Data
             builder.Entity<Purchase>()
                 .Property(p => p.PricePaid)
                 .HasPrecision(10, 2);
+
+            // Prevent cascade delete cycles between BookComment's two relationships
+            // Prevent cascade delete cycles between BookComment's two relationships
+            builder.Entity<BookComment>()
+                .HasOne(c => c.Book)
+                .WithMany()
+                .HasForeignKey(c => c.BookId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<BookComment>()
+                .HasOne(c => c.Member)
+                .WithMany()
+                .HasForeignKey(c => c.MemberId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

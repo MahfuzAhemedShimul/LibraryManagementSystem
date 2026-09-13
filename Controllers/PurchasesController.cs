@@ -38,17 +38,6 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction("Details", "Books", new { id });
             }
 
-            var alreadyPurchased = await _context.Purchases.AnyAsync(p =>
-                p.MemberId == memberId &&
-                p.BookId == id &&
-                (p.Status == "Pending" || p.Status == "Confirmed"));
-
-            if (alreadyPurchased)
-            {
-                TempData["Error"] = "You have already purchased or requested to purchase this book.";
-                return RedirectToAction("Details", "Books", new { id });
-            }
-
             var book = await _context.Books
                 .Include(b => b.Author)
                 .FirstOrDefaultAsync(b => b.BookId == id);
@@ -79,17 +68,6 @@ namespace LibraryManagementSystem.Controllers
             if (hasOverdue)
             {
                 TempData["Error"] = "You have an overdue book. Please return it before purchasing a book.";
-                return RedirectToAction("Details", "Books", new { id });
-            }
-
-            var alreadyPurchased = await _context.Purchases.AnyAsync(p =>
-                p.MemberId == memberId &&
-                p.BookId == id &&
-                (p.Status == "Pending" || p.Status == "Confirmed"));
-
-            if (alreadyPurchased)
-            {
-                TempData["Error"] = "You have already purchased or requested to purchase this book.";
                 return RedirectToAction("Details", "Books", new { id });
             }
 
@@ -132,8 +110,8 @@ namespace LibraryManagementSystem.Controllers
             return RedirectToAction(nameof(MyPurchases));
         }
 
-        // GET: Purchases/PendingPurchases (Admin/Librarian/Staff)
-        [Authorize(Roles = "Admin,Librarian,Staff")]
+        // GET: Purchases/PendingPurchases (Admin/Librarian)
+        [Authorize(Roles = "Admin,Librarian")]
         public async Task<IActionResult> PendingPurchases()
         {
             var pending = await _context.Purchases
@@ -146,9 +124,9 @@ namespace LibraryManagementSystem.Controllers
             return View(pending);
         }
 
-        // POST: Purchases/Approve/5 (Admin/Librarian/Staff) — confirms and deducts stock
+        // POST: Purchases/Approve/5 (Admin/Librarian) — confirms and deducts stock
         [HttpPost]
-        [Authorize(Roles = "Admin,Librarian,Staff")]
+        [Authorize(Roles = "Admin,Librarian")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id)
         {
@@ -176,9 +154,9 @@ namespace LibraryManagementSystem.Controllers
             return RedirectToAction(nameof(PendingPurchases));
         }
 
-        // POST: Purchases/Reject/5 (Admin/Librarian/Staff)
+        // POST: Purchases/Reject/5 (Admin/Librarian)
         [HttpPost]
-        [Authorize(Roles = "Admin,Librarian,Staff")]
+        [Authorize(Roles = "Admin,Librarian")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(int id)
         {
@@ -205,7 +183,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         // GET: Purchases/Receipt/5
-        [Authorize(Roles = "Admin,Librarian,Staff")]
+        [Authorize(Roles = "Admin,Librarian")]
         public async Task<IActionResult> Receipt(int id)
         {
             var purchase = await _context.Purchases
@@ -220,8 +198,8 @@ namespace LibraryManagementSystem.Controllers
             return View(purchase);
         }
 
-        // GET: Purchases (Admin/Librarian/Staff — full history)
-        [Authorize(Roles = "Admin,Librarian,Staff")]
+        // GET: Purchases (Admin/Librarian — full history)
+        [Authorize(Roles = "Admin,Librarian")]
         public async Task<IActionResult> Index()
         {
             var purchases = await _context.Purchases
@@ -235,15 +213,36 @@ namespace LibraryManagementSystem.Controllers
 
         // GET: Purchases/MyPurchases (Member)
         [Authorize(Roles = "Member")]
-        public async Task<IActionResult> MyPurchases()
+        public async Task<IActionResult> MyPurchases(string status, DateTime? fromDate, DateTime? toDate)
         {
             var memberId = _userManager.GetUserId(User);
 
-            var purchases = await _context.Purchases
+            var query = _context.Purchases
                 .Include(p => p.Book)
-                .Where(p => p.MemberId == memberId)
+                .Where(p => p.MemberId == memberId);
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(p => p.Status == status);
+            }
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(p => p.PurchaseDate.Date >= fromDate.Value.Date);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(p => p.PurchaseDate.Date <= toDate.Value.Date);
+            }
+
+            var purchases = await query
                 .OrderByDescending(p => p.PurchaseDate)
                 .ToListAsync();
+
+            ViewBag.Status = status;
+            ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
 
             return View(purchases);
         }

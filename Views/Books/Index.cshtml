@@ -9,7 +9,20 @@
 
 <h1>Books</h1>
 
-@if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+<form asp-action="Index" method="get" class="mb-4">
+    <div class="input-group" style="max-width: 500px;">
+        <input type="text" name="searchString" class="form-control" placeholder="Search by book title or ISBN..." value="@Context.Request.Query["searchString"]" />
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Search
+        </button>
+        @if (!string.IsNullOrEmpty(Context.Request.Query["searchString"]))
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        }
+    </div>
+</form>
+
+@if (User.IsInRole("Admin")  || User.IsInRole("Staff"))
 {
     <p><a asp-action="Create" class="btn btn-primary">Add New Book</a></p>
 }
@@ -21,6 +34,11 @@
         <a asp-controller="Account" asp-action="Register">Register here</a> or
         <a asp-controller="Account" asp-action="Login">log in</a> if you already have an account.
     </div>
+}
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No books found matching your search.</p>
 }
 
 @foreach (var categoryGroup in groupedByCategory)
@@ -55,7 +73,7 @@
                                 {
                                     <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-sm btn-info">Details</a>
                                 }
-                                @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+                                @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
                                 {
                                     <a asp-action="Edit" asp-route-id="@item.BookId" class="btn btn-sm btn-secondary">Edit</a>
                                     <a asp-action="Delete" asp-route-id="@item.BookId" class="btn btn-sm btn-danger">Delete</a>

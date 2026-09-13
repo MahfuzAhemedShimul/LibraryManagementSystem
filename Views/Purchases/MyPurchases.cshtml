@@ -2,6 +2,11 @@
 
 @{
     ViewData["Title"] = "My Purchases";
+
+    var groupedByBook = Model
+        .GroupBy(p => new { p.BookId, Title = p.Book?.Title ?? "Unknown Book" })
+        .OrderByDescending(g => g.Max(p => p.PurchaseDate))
+        .ToList();
 }
 
 <h1>My Purchases</h1>
@@ -11,25 +16,85 @@
     <div class="alert alert-success">@TempData["Success"]</div>
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Book</th>
-            <th>Price Paid</th>
-            <th>Date</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            var rowClass = item.Status == "Pending" ? "table-warning" : item.Status == "Rejected" ? "table-secondary" : "";
-            <tr class="@rowClass">
-                <td>@item.Book?.Title</td>
-                <td>@("৳" + item.PricePaid.ToString("N2"))</td>
-                <td>@item.PurchaseDate.ToShortDateString()</td>
-                <td>@item.Status</td>
-            </tr>
+<form asp-action="MyPurchases" method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label class="form-label mb-0">Status</label>
+        <select name="status" class="form-select form-select-sm">
+            <option value="">All</option>
+            <option value="Pending" selected="@(ViewBag.Status == "Pending")">Pending</option>
+            <option value="Confirmed" selected="@(ViewBag.Status == "Confirmed")">Confirmed</option>
+            <option value="Rejected" selected="@(ViewBag.Status == "Rejected")">Rejected</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <label class="form-label mb-0">From</label>
+        <input type="date" name="fromDate" class="form-control form-control-sm" value="@ViewBag.FromDate" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label mb-0">To</label>
+        <input type="date" name="toDate" class="form-control form-control-sm" value="@ViewBag.ToDate" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+        <a asp-action="MyPurchases" class="btn btn-outline-secondary btn-sm">Clear</a>
+    </div>
+</form>
+
+@if (!groupedByBook.Any())
+{
+    <p><em>No purchases match this filter.</em></p>
+}
+else
+{
+    <div class="accordion" id="myPurchasesAccordion">
+        @{
+            int i = 0;
         }
-    </tbody>
-</table>
+        @foreach (var group in groupedByBook)
+        {
+            i++;
+            var records = group.OrderByDescending(p => p.PurchaseDate).ToList();
+            var isPendingAny = records.Any(p => p.Status == "Pending");
+            var totalSpent = records.Where(p => p.Status == "Confirmed").Sum(p => p.PricePaid);
+            var collapseId = $"myPurchaseCollapse{i}";
+            var headingId = $"myPurchaseHeading{i}";
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="@headingId">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                        <span class="fw-bold me-2">@group.Key.Title</span>
+                        <span class="badge bg-secondary me-2">@records.Count purchase@(records.Count > 1 ? "s" : "")</span>
+                        @if (isPendingAny)
+                        {
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        }
+                    </button>
+                </h2>
+                <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headingId" data-bs-parent="#myPurchasesAccordion">
+                    <div class="accordion-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Price Paid</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in records)
+                                {
+                                    var rowClass = item.Status == "Pending" ? "table-warning" : item.Status == "Rejected" ? "table-secondary" : "";
+                                    <tr class="@rowClass">
+                                        <td>@("৳" + item.PricePaid.ToString("N2"))</td>
+                                        <td>@item.PurchaseDate.ToShortDateString()</td>
+                                        <td>@item.Status</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
