@@ -1,10 +1,12 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LibraryManagementSystem.Models;
 using LibraryManagementSystem.Data;
+using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.Controllers
 {
@@ -12,11 +14,19 @@ namespace LibraryManagementSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly BookSuggestionService _bookSuggestionService;
 
-        public BooksController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public BooksController(
+            ApplicationDbContext context,
+            IWebHostEnvironment webHostEnvironment,
+            UserManager<ApplicationUser> userManager,
+            BookSuggestionService bookSuggestionService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _userManager = userManager;
+            _bookSuggestionService = bookSuggestionService;
         }
 
         // GET: Books  (public browsing allowed)
@@ -91,6 +101,108 @@ namespace LibraryManagementSystem.Controllers
 
             TempData["Success"] = "Comment posted.";
             return RedirectToAction(nameof(Details), new { id = bookId });
+        }
+
+        // GET: Books/Suggestions  (Member only — AI-powered, based on their history)
+        [Authorize(Roles = "Member")]
+        public async Task<IActionResult> Suggestions()
+        {
+            var memberId = _userManager.GetUserId(User);
+
+            var borrowedBooks = await _context.Borrowings
+                .Include(b => b.Book).ThenInclude(bk => bk!.Category)
+                .Where(b => b.MemberId == memberId)
+                .Select(b => b.Book!)
+                .ToListAsync();
+
+            var purchasedBooks = await _context.Purchases
+                .Include(p => p.Book).ThenInclude(bk => bk!.Category)
+                .Where(p => p.MemberId == memberId)
+                .Select(p => p.Book!)
+                .ToListAsync();
+
+            var allOwnedBooks = borrowedBooks.Concat(purchasedBooks).ToList();
+            var hasHistory = allOwnedBooks.Any();
+
+            ViewBag.HasHistory = hasHistory;
+
+            if (!hasHistory)
+            {
+                return View(new List<Book>());
+            }
+
+            var alreadyHaveBookIds = allOwnedBooks.Select(b => b.BookId).Distinct().ToList();
+
+            var borrowCounts = borrowedBooks
+                .GroupBy(b => new { b.Title, Category = b.Category?.Name ?? "Uncategorized" })
+                .Select(g => $"Borrowed \"{g.Key.Title}\" ({g.Key.Category}) x{g.Count()}");
+
+            var purchaseCounts = purchasedBooks
+                .GroupBy(b => new { b.Title, Category = b.Category?.Name ?? "Uncategorized" })
+                .Select(g => $"Purchased \"{g.Key.Title}\" ({g.Key.Category}) x{g.Count()}");
+
+            var historyText = string.Join("\n", borrowCounts.Concat(purchaseCounts));
+
+            var availableBooks = await _context.Books
+                .Include(b => b.Author)
+                .Include(b => b.Category)
+                .Where(b => !alreadyHaveBookIds.Contains(b.BookId))
+                .ToListAsync();
+
+            List<Book> suggestions = new();
+            bool usedAi = false;
+            bool isRevisit = false;
+
+            if (availableBooks.Any())
+            {
+                var catalogText = string.Join("\n", availableBooks.Select(b =>
+                    $"{b.BookId}: {b.Title} ({b.Category?.Name ?? "Uncategorized"})"));
+
+                var suggestedIds = await _bookSuggestionService.GetSuggestedBookIdsAsync(historyText, catalogText, 8);
+
+                if (suggestedIds.Any())
+                {
+                    suggestions = suggestedIds
+                        .Select(id => availableBooks.FirstOrDefault(b => b.BookId == id))
+                        .Where(b => b != null)
+                        .Select(b => b!)
+                        .ToList();
+                    usedAi = suggestions.Any();
+                }
+
+                // Fallback tier 1: category matching
+                if (!suggestions.Any())
+                {
+                    var interestedCategoryIds = allOwnedBooks.Select(b => b.CategoryId).Distinct().ToList();
+                    suggestions = availableBooks
+                        .Where(b => interestedCategoryIds.Contains(b.CategoryId))
+                        .ToList();
+                }
+
+                // Fallback tier 2: any unowned book at all
+                if (!suggestions.Any())
+                {
+                    suggestions = availableBooks.Take(8).ToList();
+                }
+            }
+
+            // Fallback tier 3: member already owns everything in the catalog —
+            // re-suggest their most-engaged titles as "you might enjoy again"
+            if (!suggestions.Any())
+            {
+                isRevisit = true;
+                suggestions = allOwnedBooks
+                    .GroupBy(b => b.BookId)
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => g.First())
+                    .Take(8)
+                    .ToList();
+            }
+
+            ViewBag.UsedAi = usedAi;
+            ViewBag.IsRevisit = isRevisit;
+
+            return View(suggestions);
         }
 
         // GET: Books/Create

@@ -18,6 +18,7 @@ builder.Services.AddHttpClient("Groq", client =>
 
 // NEW: register the AI approval service
 builder.Services.AddScoped<AiApprovalService>();
+builder.Services.AddScoped<BookSuggestionService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

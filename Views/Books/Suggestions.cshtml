@@ -1,0 +1,74 @@
+﻿@model IEnumerable<LibraryManagementSystem.Models.Book>
+
+@{
+    ViewData["Title"] = "Book Suggestions";
+    bool hasHistory = ViewBag.HasHistory ?? false;
+    bool isRevisit = ViewBag.IsRevisit ?? false;
+}
+
+<h1>Book Suggestions</h1>
+
+@if (isRevisit)
+{
+    <p class="text-muted">You've already engaged with every book in our catalog — here are your favorites to revisit.</p>
+}
+else
+{
+    <p class="text-muted">
+        Picked based on your borrowing and purchase history.
+        @if (ViewBag.UsedAi == true)
+        {
+            <span class="badge bg-success"><i class="bi bi-stars"></i> AI Picked</span>
+        }
+    </p>
+}
+
+@if (!hasHistory)
+{
+    <div class="alert alert-info">
+        You don't have any borrowing or purchase history yet — suggestions will appear here once you borrow or buy a book.
+        <a asp-action="Index" class="alert-link">Browse Books</a> to get started.
+    </div>
+}
+else if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No suggestions available right now.
+        <a asp-action="Index" class="alert-link">Browse all Books</a>.
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var book in Model)
+        {
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                <div class="card h-100 book-grid-card">
+                    <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "https://via.placeholder.com/200x280?text=No+Cover" : book.ImageUrl)"
+                         class="card-img-top"
+                         style="height: 220px; object-fit: cover;"
+                         alt="@book.Title" />
+                    <div class="card-body p-2">
+                        <p class="mb-1 fw-bold small book-grid-title">@book.Title</p>
+                        <p class="mb-1 text-muted small">@book.Author?.Name</p>
+                        <p class="mb-1 text-muted small">@book.Category?.Name</p>
+                        <p class="mb-2 small">@("৳" + book.Price.ToString("N2"))</p>
+
+                        <div class="d-grid gap-1">
+                            <a asp-action="Details" asp-route-id="@book.BookId" class="btn btn-sm btn-info">Details</a>
+                            @if (book.AvailableCopies > 0)
+                            {
+                                <a asp-controller="Borrowings" asp-action="Request" asp-route-id="@book.BookId" class="btn btn-sm btn-primary">Request</a>
+                                <a asp-controller="Purchases" asp-action="Buy" asp-route-id="@book.BookId" class="btn btn-sm btn-success">Buy</a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-secondary" disabled>Out of Stock</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
