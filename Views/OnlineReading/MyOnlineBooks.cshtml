@@ -1,0 +1,54 @@
+﻿@model IEnumerable<LibraryManagementSystem.Models.OnlineReadingAccess>
+
+@{
+    ViewData["Title"] = "My Online Books";
+}
+
+<h1>My Online Books</h1>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">You haven't purchased online reading access to any books yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Purchased</th>
+                <th>Expires</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var access in Model)
+            {
+                var expired = access.ExpiryDate.Date < DateTime.Today;
+                <tr>
+                    <td>@access.Book?.Title</td>
+                    <td>@access.Book?.Author?.Name</td>
+                    <td>@access.PurchaseDate.ToString("MMM d, yyyy")</td>
+                    <td>@access.ExpiryDate.ToString("MMM d, yyyy")</td>
+                    <td>
+                        @if (expired)
+                        {
+                            <span class="badge bg-secondary">Expired</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-controller="OnlineReading" asp-action="Read" asp-route-id="@access.BookId" class="btn btn-sm btn-info">
+                            @(expired ? "Renew" : "Read")
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

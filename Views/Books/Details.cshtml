@@ -52,6 +52,11 @@
     {
         <button class="btn btn-secondary" disabled>Out of Stock</button>
     }
+
+    @if (!string.IsNullOrEmpty(Model.PdfContent))
+    {
+        <a asp-controller="OnlineReading" asp-action="Read" asp-route-id="@Model.BookId" class="btn btn-info">Read Online</a>
+    }
 }
 
 <div class="mt-3">

@@ -1,5 +1,4 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="en">
 
@@ -9,30 +8,18 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-
-
     <title>@ViewData["Title"] - MAS Library BD</title>
-
-
 
     <script type="importmap"></script>
 
-
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-
 
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-
-
     <link rel="stylesheet"
           href="~/css/site.css"
           asp-append-version="true" />
-
-
 
     <link rel="stylesheet"
           href="~/LibraryManagementSystem.styles.css"
@@ -40,27 +27,17 @@
 
 </head>
 
-
-
 <body>
 
-
-
     <!-- =========================
-
          NAVBAR
-
          ========================= -->
 
     <header>
 
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-0">
 
-
-
             <div class="container-fluid">
-
-
 
                 <a class="navbar-brand"
                    asp-area=""
@@ -71,8 +48,6 @@
 
                 </a>
 
-
-
                 <button class="navbar-toggler"
                         type="button"
                         data-bs-toggle="collapse"
@@ -81,25 +56,17 @@
                         aria-expanded="false"
                         aria-label="Toggle navigation">
 
-
-
                     <span class="navbar-toggler-icon"></span>
-
-
 
                 </button>
 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
 
                     @if (User.Identity == null || !User.Identity.IsAuthenticated)
-
                     {
-
                         <!-- Public Navigation -->
 
                         <ul class="navbar-nav">
-
-
 
                             <li class="nav-item">
 
@@ -114,8 +81,6 @@
 
                             </li>
 
-
-
                             <li class="nav-item">
 
                                 <a class="nav-link text-dark"
@@ -127,8 +92,6 @@
                                 </a>
 
                             </li>
-
-
 
                             <li class="nav-item">
 
@@ -142,8 +105,6 @@
 
                             </li>
 
-
-
                             <li class="nav-item">
 
                                 <a class="nav-link text-dark"
@@ -156,17 +117,11 @@
 
                             </li>
 
-
-
                         </ul>
-
-
 
                         <!-- Login only, no public Register -->
 
                         <ul class="navbar-nav ms-3">
-
-
 
                             <li class="nav-item">
 
@@ -180,25 +135,15 @@
 
                             </li>
 
-
-
                         </ul>
-
                     }
-
                     else
-
                     {
-
                         <!-- Logged In User -->
 
                         <span></span>
 
-
-
                         <ul class="navbar-nav">
-
-
 
                             <li class="nav-item">
 
@@ -210,8 +155,6 @@
 
                             </li>
 
-
-
                             <li class="nav-item">
 
                                 <form asp-controller="Account"
@@ -219,98 +162,70 @@
                                       method="post"
                                       class="form-inline">
 
-
-
                                     <button type="submit"
                                             class="nav-link btn btn-link text-dark">
 
-
-
                                         <i class="bi bi-box-arrow-right"></i> Logout
 
-
-
                                     </button>
-
-
 
                                 </form>
 
                             </li>
 
-
-
                         </ul>
-
                     }
-
-
 
                 </div>
 
             </div>
-
-
 
         </nav>
 
     </header>
 
 
-
-
-
     <!-- =========================
-
          APPLICATION BODY
-
          ========================= -->
 
     <div class="app-body">
 
-
-
         @if (User.Identity != null && User.Identity.IsAuthenticated)
-
         {
-
             <!-- =========================
-
                  SIDEBAR
-
                  ========================= -->
 
             <aside class="sidebar">
 
-
-
                 <ul class="sidebar-nav">
 
-
-
                     <li>
-                        <a asp-controller="Home" asp-action="Index">
+                        <a asp-controller="Home"
+                           asp-action="Index">
+
                             <i class="bi bi-house-door"></i> Home
+
                         </a>
                     </li>
 
                     <li>
-                        <a asp-controller="Books" asp-action="Index">
+                        <a asp-controller="Books"
+                           asp-action="Index">
+
                             <i class="bi bi-book"></i> Books
+
                         </a>
                     </li>
-
-
-
 
 
                     @if (User.IsInRole("Admin"))
-
                     {
-
                         <li>
 
-                            <a asp-controller="Account" asp-action="Register">
+                            <a asp-controller="Account"
+                               asp-action="Register">
 
                                 <i class="bi bi-person-plus"></i>
 
@@ -320,11 +235,10 @@
 
                         </li>
 
-
-
                         <li>
 
-                            <a asp-controller="Staff" asp-action="Index">
+                            <a asp-controller="Staff"
+                               asp-action="Index">
 
                                 <i class="bi bi-people"></i>
 
@@ -333,20 +247,15 @@
                             </a>
 
                         </li>
-
                     }
 
 
-
-
-
                     @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
-
                     {
-
                         <li>
 
-                            <a asp-controller="Authors" asp-action="Index">
+                            <a asp-controller="Authors"
+                               asp-action="Index">
 
                                 <i class="bi bi-person-badge"></i>
 
@@ -356,11 +265,10 @@
 
                         </li>
 
-
-
                         <li>
 
-                            <a asp-controller="Categories" asp-action="Index">
+                            <a asp-controller="Categories"
+                               asp-action="Index">
 
                                 <i class="bi bi-tags"></i>
 
@@ -369,20 +277,15 @@
                             </a>
 
                         </li>
-
                     }
 
 
-
-
-
                     @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-
                     {
-
                         <li>
 
-                            <a asp-controller="Members" asp-action="Index">
+                            <a asp-controller="Members"
+                               asp-action="Index">
 
                                 <i class="bi bi-person-lines-fill"></i>
 
@@ -392,11 +295,10 @@
 
                         </li>
 
-
-
                         <li>
 
-                            <a asp-controller="Borrowings" asp-action="Index">
+                            <a asp-controller="Borrowings"
+                               asp-action="Index">
 
                                 <i class="bi bi-journal-text"></i>
 
@@ -406,11 +308,10 @@
 
                         </li>
 
-
-
                         <li>
 
-                            <a asp-controller="Reports" asp-action="Index">
+                            <a asp-controller="Reports"
+                               asp-action="Index">
 
                                 <i class="bi bi-bar-chart"></i>
 
@@ -419,17 +320,11 @@
                             </a>
 
                         </li>
-
                     }
 
 
-
-
-
                     @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-
                     {
-
                         <li>
 
                             <a asp-controller="Borrowings"
@@ -443,8 +338,6 @@
 
                         </li>
 
-
-
                         <li>
 
                             <a asp-controller="Purchases"
@@ -457,15 +350,11 @@
                             </a>
 
                         </li>
-
                     }
 
 
-
                     @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-
                     {
-
                         <li>
 
                             <a asp-controller="Borrowings"
@@ -478,15 +367,11 @@
                             </a>
 
                         </li>
-
                     }
 
 
-
                     @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-
                     {
-
                         <li>
 
                             <a asp-controller="Fines"
@@ -500,11 +385,10 @@
 
                         </li>
 
-
-
                         <li>
 
-                            <a asp-controller="Receipts" asp-action="Index">
+                            <a asp-controller="Receipts"
+                               asp-action="Index">
 
                                 <i class="bi bi-receipt"></i>
 
@@ -513,17 +397,11 @@
                             </a>
 
                         </li>
-
                     }
 
 
-
-
-
                     @if (User.IsInRole("Member"))
-
                     {
-
                         <li>
 
                             <a asp-controller="Borrowings"
@@ -536,8 +414,6 @@
                             </a>
 
                         </li>
-
-
 
                         <li>
 
@@ -552,7 +428,20 @@
 
                         </li>
 
+                        <!-- My Online Books -->
 
+                        <li>
+
+                            <a asp-controller="OnlineReading"
+                               asp-action="MyOnlineBooks">
+
+                                <i class="bi bi-book"></i>
+
+                                My Online Books
+
+                            </a>
+
+                        </li>
 
                         <li>
 
@@ -567,8 +456,6 @@
 
                         </li>
 
-
-
                         <li>
 
                             <a asp-controller="Books"
@@ -581,10 +468,7 @@
                             </a>
 
                         </li>
-
                     }
-
-
 
 
                     <li>
@@ -601,7 +485,6 @@
                     </li>
 
 
-
                     <li>
 
                         <a asp-controller="Profile"
@@ -615,33 +498,19 @@
 
                     </li>
 
-
-
                 </ul>
 
-
-
             </aside>
-
         }
 
 
-
-
-
         <!-- =========================
-
              MAIN CONTENT
-
              ========================= -->
 
         <div class="main-content">
 
-
-
             <div class="container-fluid">
-
-
 
                 <main role="main" class="pb-3">
 
@@ -649,28 +518,11 @@
 
                 </main>
 
-
-
             </div>
 
 
-
-
-
             <!-- =========================
-
                  FOOTER
-
-                 ========================= -->
-            <!-- =========================
-
-                 FOOTER
-
-                 ========================= -->
-            <!-- =========================
-
-                 FOOTER
-
                  ========================= -->
 
             <footer class="library-footer">
@@ -678,11 +530,15 @@
                 <div class="footer-container">
 
                     <!-- Library Information -->
+
                     <div class="footer-column footer-about">
 
                         <div class="footer-brand">
+
                             <i class="bi bi-book-half"></i>
+
                             <h2>MAS Library BD</h2>
+
                         </div>
 
                         <p>
@@ -690,145 +546,194 @@
                         </p>
 
                         <div class="social-icons">
-                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+
+                            <a href="https://facebook.com"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               aria-label="Facebook">
+
                                 <i class="bi bi-facebook"></i>
+
                             </a>
+
                         </div>
 
                     </div>
 
+
                     <!-- Important Links -->
+
                     <div class="footer-column">
 
                         <h3>Quick Links</h3>
 
-                        <a asp-area="" asp-controller="Home" asp-action="Index">
+                        <a asp-area=""
+                           asp-controller="Home"
+                           asp-action="Index">
+
                             <i class="bi bi-chevron-right"></i> Home
+
                         </a>
 
-                        <a asp-area="" asp-controller="Home" asp-action="Privacy">
+                        <a asp-area=""
+                           asp-controller="Home"
+                           asp-action="Privacy">
+
                             <i class="bi bi-chevron-right"></i> Privacy
+
                         </a>
 
-                        <a asp-controller="Books" asp-action="Index">
+                        <a asp-controller="Books"
+                           asp-action="Index">
+
                             <i class="bi bi-chevron-right"></i> Book Search
+
                         </a>
 
                     </div>
 
+
                     <!-- Access -->
+
                     <div class="footer-column">
 
                         <h3>Access</h3>
 
-                        <a asp-controller="Account" asp-action="Login">
+                        <a asp-controller="Account"
+                           asp-action="Login">
+
                             <i class="bi bi-chevron-right"></i> Member Login
+
                         </a>
 
                     </div>
 
+
                     <!-- Contact -->
+
                     <div class="footer-column footer-contact">
 
                         <h3>Contact</h3>
 
                         <p>
+
                             <i class="bi bi-envelope"></i>
+
                             <span>library@maslibrary.edu</span>
+
                         </p>
 
                         <p>
+
                             <i class="bi bi-geo-alt"></i>
+
                             <span>Dhaka, Bangladesh</span>
+
                         </p>
 
                         <p>
+
                             <i class="bi bi-telephone"></i>
+
                             <span>
+
                                 Emergency Hotline:
+
                                 <strong>16222</strong>
+
                             </span>
+
                         </p>
 
                     </div>
 
                 </div>
 
+
                 <!-- Footer Bottom -->
+
                 <div class="footer-bottom">
 
                     <div>
+
                         &copy; 2026 MAS Library BD. All rights reserved.
+
                     </div>
 
                     <div>
+
                         Created by Mahfuz Ahmed Shimul
+
                     </div>
 
                 </div>
 
             </footer>
 
+        </div>
 
-
+    </div>
 
 
     <!-- =========================
-
          SCRIPTS
-
          ========================= -->
-
-
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
-
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-
 
     <script src="~/js/site.js"
             asp-append-version="true">
 
     </script>
 
-
-
     @await RenderSectionAsync("Scripts", required: false)
-
 
 
     <!-- Floating Nexus Chat Widget -->
 
     <div id="nexusWidget">
 
-        <button id="nexusToggleBtn" class="nexus-toggle-btn">
+        <button id="nexusToggleBtn"
+                class="nexus-toggle-btn">
 
             <i class="bi bi-chat-dots-fill"></i>
 
         </button>
 
-
-
-        <div id="nexusPanel" class="nexus-panel d-none">
+        <div id="nexusPanel"
+             class="nexus-panel d-none">
 
             <div class="nexus-panel-header">
 
-                <span><i class="bi bi-robot"></i> Nexus</span>
+                <span>
+                    <i class="bi bi-robot"></i> Nexus
+                </span>
 
-                <button id="nexusCloseBtn" class="btn-close btn-close-white"></button>
+                <button id="nexusCloseBtn"
+                        class="btn-close btn-close-white">
+                </button>
 
             </div>
 
-            <div id="nexusChatBox" class="nexus-chat-box"></div>
+            <div id="nexusChatBox"
+                 class="nexus-chat-box">
+            </div>
 
             <div class="nexus-input-row">
 
-                <input type="text" id="nexusUserInput" class="form-control" placeholder="Ask Nexus..." />
+                <input type="text"
+                       id="nexusUserInput"
+                       class="form-control"
+                       placeholder="Ask Nexus..." />
 
-                <button id="nexusSendBtn" class="btn btn-primary btn-sm">Send</button>
+                <button id="nexusSendBtn"
+                        class="btn btn-primary btn-sm">
+
+                    Send
+
+                </button>
 
             </div>
 
@@ -837,21 +742,25 @@
     </div>
 
 
-
     <script>
 
-        const nexusToggleBtn = document.getElementById('nexusToggleBtn');
+        const nexusToggleBtn =
+        document.getElementById('nexusToggleBtn');
 
-        const nexusPanel = document.getElementById('nexusPanel');
+        const nexusPanel =
+        document.getElementById('nexusPanel');
 
-        const nexusCloseBtn = document.getElementById('nexusCloseBtn');
+        const nexusCloseBtn =
+        document.getElementById('nexusCloseBtn');
 
-        const nexusChatBox = document.getElementById('nexusChatBox');
+        const nexusChatBox =
+        document.getElementById('nexusChatBox');
 
-        const nexusUserInput = document.getElementById('nexusUserInput');
+        const nexusUserInput =
+        document.getElementById('nexusUserInput');
 
-        const nexusSendBtn = document.getElementById('nexusSendBtn');
-
+        const nexusSendBtn =
+        document.getElementById('nexusSendBtn');
 
 
         nexusToggleBtn.addEventListener('click', () => {
@@ -861,13 +770,11 @@
         });
 
 
-
         nexusCloseBtn.addEventListener('click', () => {
 
         nexusPanel.classList.add('d-none');
 
         });
-
 
 
         function appendNexusMessage(sender, text) {
@@ -876,22 +783,24 @@
 
         msg.className = 'mb-2';
 
-        msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        msg.innerHTML =
+        `<strong>${sender}:</strong> ${text}`;
 
         nexusChatBox.appendChild(msg);
 
-        nexusChatBox.scrollTop = nexusChatBox.scrollHeight;
+        nexusChatBox.scrollTop =
+        nexusChatBox.scrollHeight;
 
         }
 
 
-
         async function sendNexusMessage() {
 
-        const message = nexusUserInput.value.trim();
+        const message =
+        nexusUserInput.value.trim();
 
-        if (!message) return;
-
+        if (!message)
+        return;
 
 
         appendNexusMessage('You', message);
@@ -901,37 +810,48 @@
         appendNexusMessage('Nexus', '...typing');
 
 
-
-        const response = await fetch('/Chat/Ask', {
+        const response =
+        await fetch('/Chat/Ask', {
 
         method: 'POST',
 
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+        'Content-Type': 'application/json'
+        },
 
-        body: JSON.stringify({ message: message })
+        body: JSON.stringify({
+        message: message
+        })
 
         });
 
 
+        const data =
+        await response.json();
 
-        const data = await response.json();
-
-        nexusChatBox.lastChild.innerHTML = `<strong>Nexus:</strong> ${data.reply}`;
+        nexusChatBox.lastChild.innerHTML =
+        `<strong>Nexus:</strong> ${data.reply}`;
 
         }
 
 
+        nexusSendBtn.addEventListener(
+        'click',
+        sendNexusMessage
+        );
 
-        nexusSendBtn.addEventListener('click', sendNexusMessage);
 
-        nexusUserInput.addEventListener('keypress', function (e) {
+        nexusUserInput.addEventListener(
+        'keypress',
+        function (e) {
 
-        if (e.key === 'Enter') sendNexusMessage();
+        if (e.key === 'Enter')
+        sendNexusMessage();
 
-        });
+        }
+        );
 
     </script>
-
 
 
 </body>

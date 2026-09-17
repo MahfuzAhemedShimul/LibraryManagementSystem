@@ -26,5 +26,10 @@ namespace LibraryManagementSystem.Models
         public bool IsPopular { get; set; }
 
         public string? ImageUrl { get; set; }
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal OnlineReadingPrice { get; set; }
+
+        public string? PdfContent { get; set; }
     }
 }

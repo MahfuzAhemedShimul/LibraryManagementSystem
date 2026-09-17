@@ -22,7 +22,7 @@
     </div>
 </form>
 
-@if (User.IsInRole("Admin")  || User.IsInRole("Staff"))
+@if (User.IsInRole("Admin") || User.IsInRole("Staff"))
 {
     <p><a asp-action="Create" class="btn btn-primary">Add New Book</a></p>
 }
@@ -89,6 +89,10 @@
                                     else
                                     {
                                         <button class="btn btn-sm btn-secondary" disabled>Out of Stock</button>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.PdfContent))
+                                    {
+                                        <a asp-controller="OnlineReading" asp-action="Read" asp-route-id="@item.BookId" class="btn btn-sm btn-outline-info">Read Online</a>
                                     }
                                 }
                             </div>

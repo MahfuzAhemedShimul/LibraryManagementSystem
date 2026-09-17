@@ -19,6 +19,7 @@ namespace LibraryManagementSystem.Data
         public DbSet<Fine> Fines { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<BookComment> BookComments { get; set; }
+        public DbSet<OnlineReadingAccess> OnlineReadingAccesses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

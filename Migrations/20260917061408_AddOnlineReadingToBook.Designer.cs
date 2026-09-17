@@ -4,6 +4,7 @@ using LibraryManagementSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryManagementSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260917061408_AddOnlineReadingToBook")]
+    partial class AddOnlineReadingToBook
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -288,39 +291,6 @@ namespace LibraryManagementSystem.Migrations
                     b.ToTable("Fines");
                 });
 
-            modelBuilder.Entity("LibraryManagementSystem.Models.OnlineReadingAccess", b =>
-                {
-                    b.Property<int>("OnlineReadingAccessId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OnlineReadingAccessId"));
-
-                    b.Property<int>("BookId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ExpiryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MemberId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("PurchaseDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("OnlineReadingAccessId");
-
-                    b.HasIndex("BookId");
-
-                    b.HasIndex("MemberId");
-
-                    b.ToTable("OnlineReadingAccesses");
-                });
-
             modelBuilder.Entity("LibraryManagementSystem.Models.Purchase", b =>
                 {
                     b.Property<int>("PurchaseId")
@@ -571,25 +541,6 @@ namespace LibraryManagementSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("Borrowing");
-                });
-
-            modelBuilder.Entity("LibraryManagementSystem.Models.OnlineReadingAccess", b =>
-                {
-                    b.HasOne("LibraryManagementSystem.Models.Book", "Book")
-                        .WithMany()
-                        .HasForeignKey("BookId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LibraryManagementSystem.Models.ApplicationUser", "Member")
-                        .WithMany()
-                        .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Book");
-
-                    b.Navigation("Member");
                 });
 
             modelBuilder.Entity("LibraryManagementSystem.Models.Purchase", b =>

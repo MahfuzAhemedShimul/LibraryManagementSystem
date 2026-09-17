@@ -54,6 +54,18 @@
             </div>
 
             <div class="form-group">
+                <label asp-for="OnlineReadingPrice" class="control-label">Online Reading Price</label>
+                <input asp-for="OnlineReadingPrice" class="form-control" />
+                <span asp-validation-for="OnlineReadingPrice" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PdfContent" class="control-label">PDF Content / Link</label>
+                <textarea asp-for="PdfContent" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="PdfContent" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
                 <label class="control-label">Cover Image</label>
                 <input type="file" name="CoverImage" class="form-control" accept="image/*" />
             </div>
