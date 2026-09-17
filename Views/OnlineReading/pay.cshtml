@@ -4,111 +4,321 @@
     ViewData["Title"] = "Pay for Online Reading";
 }
 
-<h1>Pay for Online Reading</h1>
-
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-<dl class="row">
-    <dt class="col-sm-3">Title</dt>
-    <dd class="col-sm-9">@Model.Title</dd>
-    <dt class="col-sm-3">Author</dt>
-    <dd class="col-sm-9">@Model.Author?.Name</dd>
-    <dt class="col-sm-3">Online Reading Price</dt>
-    <dd class="col-sm-9">@("৳" + Model.OnlineReadingPrice.ToString("N2"))</dd>
-</dl>
-
-<form asp-action="Pay" method="post" id="paymentForm">
-    <input type="hidden" name="id" value="@Model.BookId" />
-
-    <div class="form-group mb-3">
-        <label for="paymentMethod">Payment Method</label>
-        <select name="paymentMethod" id="paymentMethod" class="form-control" required>
-            <option value="Card">Card</option>
-            <option value="Mobile Banking">Mobile Banking</option>
-        </select>
-    </div>
-
-    <!-- Mobile Banking demo fields -->
-    <div id="mobileBankingFields" class="payment-demo-fields d-none">
-        <div class="card card-body bg-light mb-3">
-            <h6 class="text-muted mb-3"><i class="bi bi-phone"></i> Mobile Banking Details</h6>
-
-            <div class="form-group mb-2">
-                <label>Account Holder Name</label>
-                <input type="text" class="form-control" placeholder="e.g. Rizvi Khan" />
-            </div>
-
-            <div class="form-group mb-2">
-                <label>Mobile Number</label>
-                <input type="text" class="form-control" placeholder="01XXXXXXXXX" maxlength="11" />
-            </div>
-
-            <div class="form-group mb-2">
-                <label>Amount</label>
-                <input type="text" class="form-control" maxlength="11" />
-            </div>
-
-            <div class="form-group mb-2">
-                <label>Password</label>
-                <input type="text" class="form-control" maxlength="11" />
+<div class="checkout-wrap">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card order-summary-card">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase small mb-3">Online Reading Access</h6>
+                    <div class="d-flex gap-3 mb-3">
+                        <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://via.placeholder.com/80x110?text=No+Cover" : Model.ImageUrl)"
+                             style="width:70px; height:96px; object-fit:cover; border-radius:6px;" alt="@Model.Title" />
+                        <div>
+                            <div class="fw-bold">@Model.Title</div>
+                            <div class="text-muted small">@Model.Author?.Name</div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">Access Duration</span>
+                        <span>14 days</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">Reading Price</span>
+                        <span>@("৳" + Model.OnlineReadingPrice.ToString("N2"))</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold mt-2 pt-2 border-top">
+                        <span>Total</span>
+                        <span>@("৳" + Model.OnlineReadingPrice.ToString("N2"))</span>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Card demo fields -->
-    <div id="cardFields" class="payment-demo-fields d-none">
-        <div class="card card-body bg-light mb-3">
-            <h6 class="text-muted mb-3"><i class="bi bi-credit-card"></i> Card Details</h6>
+        <div class="col-lg-8">
+            <h1 class="h3 mb-3">Payment Details</h1>
 
-            <div class="form-group mb-2">
-                <label>Cardholder Name</label>
-                <input type="text" class="form-control" placeholder="e.g. Rizvi Khan" />
-            </div>
+            <form asp-action="Pay" method="post" id="paymentForm">
+                <input type="hidden" name="id" value="@Model.BookId" />
+                <input type="hidden" name="paymentMethod" id="paymentMethod" value="Card" />
 
-            <div class="form-group mb-2">
-                <label>Bank Name</label>
-                <input type="text" class="form-control" placeholder="e.g. Dutch-Bangla Bank" />
-            </div>
+                <div class="method-tabs mb-4">
+                    <button type="button" class="method-tab active" data-method="Card">
+                        <i class="bi bi-credit-card"></i> Card
+                    </button>
+                    <button type="button" class="method-tab" data-method="Mobile Banking">
+                        <i class="bi bi-phone"></i> Mobile Banking
+                    </button>
+                </div>
 
-            <div class="form-group mb-2">
-                <label>Card ID / Number</label>
-                <input type="text" class="form-control" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" />
-            </div>
+                <!-- Card payment -->
+                <div id="cardFields" class="payment-panel">
+                    <div class="fake-card mb-4" id="fakeCard">
+                        <div class="fake-card-top">
+                            <i class="bi bi-wifi fake-chip-icon"></i>
+                            <span class="fake-card-brand" id="cardBrandLabel">CARD</span>
+                        </div>
+                        <div class="fake-card-number" id="cardPreviewNumber">•••• •••• •••• ••••</div>
+                        <div class="fake-card-bottom">
+                            <div>
+                                <div class="fake-card-label">Card Holder</div>
+                                <div class="fake-card-value" id="cardPreviewName">YOUR NAME</div>
+                            </div>
+                            <div>
+                                <div class="fake-card-label">Bank</div>
+                                <div class="fake-card-value" id="cardPreviewBank">—</div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="form-group mb-2">
-                <label>PIN</label>
-                <input type="password" class="form-control" placeholder="••••" maxlength="4" />
-            </div>
+                    <div class="form-group mb-3">
+                        <label>Cardholder Name</label>
+                        <input type="text" name="cardHolderName" id="cardHolderName" class="form-control" placeholder="e.g. Rizvi Khan" required />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Bank Name</label>
+                        <input type="text" name="cardBankName" id="cardBankName" class="form-control" placeholder="e.g. Dutch-Bangla Bank" required />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8 form-group mb-3">
+                            <label>Card Number</label>
+                            <input type="text" name="cardNumber" id="cardNumber" class="form-control" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" inputmode="numeric" required />
+                        </div>
+                        <div class="col-md-4 form-group mb-3">
+                            <label>PIN</label>
+                            <input type="password" name="cardPin" id="cardPin" class="form-control" placeholder="••••" maxlength="4" inputmode="numeric" required />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Banking payment -->
+                <div id="mobileBankingFields" class="payment-panel d-none">
+                    <div class="provider-picker mb-4">
+                        <label class="provider-option">
+                            <input type="radio" name="mbProvider" value="bKash" checked />
+                            <span class="provider-chip bkash">bKash</span>
+                        </label>
+                        <label class="provider-option">
+                            <input type="radio" name="mbProvider" value="Nagad" />
+                            <span class="provider-chip nagad">Nagad</span>
+                        </label>
+                        <label class="provider-option">
+                            <input type="radio" name="mbProvider" value="Rocket" />
+                            <span class="provider-chip rocket">Rocket</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Account Holder Name</label>
+                        <input type="text" name="mbAccountName" class="form-control" placeholder="e.g. Rizvi Khan" required />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Mobile Number</label>
+                        <input type="text" name="mbMobileNumber" id="mbMobileNumber" class="form-control" placeholder="01XXXXXXXXX" maxlength="11" inputmode="numeric" required />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>PIN</label>
+                        <input type="password" name="mbPassword" class="form-control" maxlength="5" inputmode="numeric" placeholder="••••" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg w-100 mt-2" id="submitBtn">
+                    <span id="submitBtnText">Confirm Payment — @("৳" + Model.OnlineReadingPrice.ToString("N2"))</span>
+                </button>
+                <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.BookId" class="btn btn-link w-100 text-muted mt-1">Cancel and go back</a>
+            </form>
         </div>
     </div>
+</div>
 
-    <button type="submit" class="btn btn-success">Confirm Payment</button>
-    <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.BookId" class="btn btn-secondary">Cancel</a>
-</form>
+<style>
+    .checkout-wrap {
+        max-width: 960px;
+    }
+
+    .order-summary-card {
+        border-radius: 12px;
+        position: sticky;
+        top: 1rem;
+    }
+
+    .method-tabs {
+        display: flex;
+        gap: .5rem;
+        border-bottom: 2px solid rgba(0,0,0,0.08);
+    }
+
+    .method-tab {
+        flex: 1;
+        background: none;
+        border: none;
+        padding: .75rem;
+        font-weight: 600;
+        color: #6c757d;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        cursor: pointer;
+    }
+
+        .method-tab.active {
+            color: #0dcaf0;
+            border-bottom-color: #0dcaf0;
+        }
+
+    .fake-card {
+        background: linear-gradient(135deg, #1f2937, #374151);
+        color: #fff;
+        border-radius: 14px;
+        padding: 1.25rem 1.5rem;
+        max-width: 420px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .fake-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.75rem;
+    }
+
+    .fake-chip-icon {
+        font-size: 1.3rem;
+        opacity: .85;
+    }
+
+    .fake-card-brand {
+        font-size: .8rem;
+        letter-spacing: 1px;
+        opacity: .85;
+    }
+
+    .fake-card-number {
+        font-size: 1.3rem;
+        letter-spacing: 2px;
+        font-family: 'Courier New', monospace;
+        margin-bottom: 1.5rem;
+    }
+
+    .fake-card-bottom {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .fake-card-label {
+        font-size: .65rem;
+        text-transform: uppercase;
+        opacity: .65;
+    }
+
+    .fake-card-value {
+        font-size: .9rem;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+    }
+
+    .provider-picker {
+        display: flex;
+        gap: .75rem;
+    }
+
+    .provider-option input {
+        display: none;
+    }
+
+    .provider-chip {
+        display: inline-block;
+        padding: .5rem 1.25rem;
+        border-radius: 999px;
+        font-weight: 700;
+        color: #fff;
+        opacity: .5;
+        cursor: pointer;
+        transition: opacity .15s ease;
+    }
+
+    .provider-option input:checked + .provider-chip {
+        opacity: 1;
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.15);
+    }
+
+    .provider-chip.bkash {
+        background: #e2136e;
+    }
+
+    .provider-chip.nagad {
+        background: #f6921e;
+    }
+
+    .provider-chip.rocket {
+        background: #8a3ab9;
+    }
+</style>
 
 @section Scripts {
     <script>
-        const paymentMethodSelect = document.getElementById('paymentMethod');
-        const mobileBankingFields = document.getElementById('mobileBankingFields');
+        const paymentMethodInput = document.getElementById('paymentMethod');
         const cardFields = document.getElementById('cardFields');
+        const mobileBankingFields = document.getElementById('mobileBankingFields');
+        const tabs = document.querySelectorAll('.method-tab');
 
-        function togglePaymentFields() {
-            const selected = paymentMethodSelect.value;
+        function setMethod(method) {
+            paymentMethodInput.value = method;
+            tabs.forEach(t => t.classList.toggle('active', t.dataset.method === method));
 
-            mobileBankingFields.classList.add('d-none');
-            cardFields.classList.add('d-none');
+            const showCard = method === 'Card';
+            cardFields.classList.toggle('d-none', !showCard);
+            mobileBankingFields.classList.toggle('d-none', showCard);
 
-            if (selected === 'Mobile Banking') {
-                mobileBankingFields.classList.remove('d-none');
-            } else if (selected === 'Card') {
-                cardFields.classList.remove('d-none');
-            }
+            cardFields.querySelectorAll('input').forEach(el => el.disabled = !showCard);
+            mobileBankingFields.querySelectorAll('input').forEach(el => el.disabled = showCard);
         }
 
-        paymentMethodSelect.addEventListener('change', togglePaymentFields);
-        togglePaymentFields();
+        tabs.forEach(tab => tab.addEventListener('click', () => setMethod(tab.dataset.method)));
+        setMethod('Card');
+
+        // Live card preview
+        const cardNumberInput = document.getElementById('cardNumber');
+        const cardHolderInput = document.getElementById('cardHolderName');
+        const cardBankInput = document.getElementById('cardBankName');
+
+        cardNumberInput.addEventListener('input', function () {
+            let digits = this.value.replace(/\D/g, '').slice(0, 16);
+            this.value = digits.replace(/(.{4})/g, '$1 ').trim();
+            const preview = digits.padEnd(16, '•').replace(/(.{4})/g, '$1 ').trim();
+            document.getElementById('cardPreviewNumber').textContent = preview;
+        });
+
+        cardHolderInput.addEventListener('input', function () {
+            document.getElementById('cardPreviewName').textContent = this.value || 'YOUR NAME';
+        });
+
+        cardBankInput.addEventListener('input', function () {
+            document.getElementById('cardPreviewBank').textContent = this.value || '—';
+            document.getElementById('cardBrandLabel').textContent = (this.value || 'CARD').toUpperCase();
+        });
+
+        document.getElementById('cardPin').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        document.getElementById('mbMobileNumber').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        // Processing state on submit
+        document.getElementById('paymentForm').addEventListener('submit', function () {
+            const btn = document.getElementById('submitBtn');
+            document.getElementById('submitBtnText').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+            btn.disabled = true;
+        });
     </script>
 }

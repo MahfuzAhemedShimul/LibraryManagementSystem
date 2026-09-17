@@ -8,55 +8,123 @@
     DateTime? expiry = ViewBag.ExpiryDate as DateTime?;
 }
 
-<h1>@Model.Title</h1>
-<p class="text-muted">@Model.Author?.Name</p>
+<div class="reading-progress-track">
+    <div class="reading-progress-bar" id="readingProgressBar"></div>
+</div>
+
+<div class="reader-sticky-header">
+    <div>
+        <h1 class="mb-0">@Model.Title</h1>
+        <p class="text-muted mb-0">@Model.Author?.Name</p>
+    </div>
+    @if (expiry.HasValue)
+    {
+        var daysLeft = (expiry.Value.Date - DateTime.Today).Days;
+        <div class="expiry-pill">
+            @daysLeft day@(daysLeft == 1 ? "" : "s") left <span class="text-muted">· expires @expiry.Value.ToString("MMM d")</span>
+        </div>
+    }
+</div>
 
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success">@TempData["Success"]</div>
 }
 
-@if (expiry.HasValue)
-{
-    var daysLeft = (expiry.Value.Date - DateTime.Today).Days;
-    <div class="alert alert-info py-2">
-        Access expires on <strong>@expiry.Value.ToString("MMM d, yyyy")</strong> (@daysLeft day@(daysLeft == 1 ? "" : "s") left)
-    </div>
-}
-
-<div class="alert alert-warning py-2 small">
-    This content is for your personal reading only. Copying, printing, and downloading are disabled.
+<div class="alert alert-warning py-2 small d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span>This content is for your personal reading only. Copying, printing, and downloading are disabled.</span>
+    <span class="font-controls">
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="fontDecrease">A−</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="fontIncrease">A+</button>
+    </span>
 </div>
 
-<div class="card position-relative protected-reader" oncontextmenu="return false;">
-    <div class="watermark-overlay">
-        @User.Identity!.Name
-    </div>
-    <div class="card-body">
+<div class="card position-relative protected-reader shadow-sm" oncontextmenu="return false;">
+    <div class="watermark-overlay" id="watermarkOverlay"></div>
+    <div class="card-body reader-body">
         @if (isUrl)
         {
             <iframe src="@pdfSrc" style="width:100%; height:80vh; border:none;"></iframe>
         }
         else
         {
-            <div class="protected-text">@Model.PdfContent</div>
+            <div class="protected-text" id="readerText">@Model.PdfContent</div>
         }
     </div>
 </div>
 
-<div class="mt-3">
+<div class="mt-3 d-flex justify-content-between">
     <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.BookId" class="btn btn-secondary">Back to Book</a>
+    <button type="button" class="btn btn-outline-secondary" id="backToTop">Back to Top</button>
 </div>
 
 <style>
+    .reading-progress-track {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        height: 4px;
+        background: rgba(0,0,0,0.08);
+        margin-bottom: 1rem;
+    }
+
+    .reading-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: #0d6efd;
+        transition: width 0.1s ease-out;
+    }
+
+    .reader-sticky-header {
+        position: sticky;
+        top: 4px;
+        z-index: 19;
+        background: var(--bs-body-bg, #fff);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: .5rem;
+        padding: .75rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        margin-bottom: 1rem;
+    }
+
+    .expiry-pill {
+        background: #eef6ff;
+        border: 1px solid #cfe3ff;
+        border-radius: 999px;
+        padding: .25rem .75rem;
+        font-size: .85rem;
+        white-space: nowrap;
+    }
+
     .protected-reader {
         user-select: none;
         -webkit-user-select: none;
         -ms-user-select: none;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .reader-body {
+        background: #fdfcf8;
+        padding: 2.5rem;
     }
 
     .protected-text {
         white-space: pre-wrap;
+        max-width: 700px;
+        margin: 0 auto;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.1rem;
+        line-height: 1.9;
+        color: #2b2b2b;
+    }
+
+    .font-controls .btn {
+        padding: 0 .5rem;
+        line-height: 1.6;
     }
 
     .watermark-overlay {
@@ -67,13 +135,14 @@
         bottom: 0;
         pointer-events: none;
         z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        color: rgba(0, 0, 0, 0.08);
-        transform: rotate(-30deg);
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4rem 2rem;
+        padding: 2rem;
+        transform: rotate(-25deg) scale(1.3);
         overflow: hidden;
+        opacity: 0.07;
+        font-size: 1rem;
         white-space: nowrap;
     }
 
@@ -99,6 +168,43 @@
             if (blockCombo || e.key === 'PrintScreen') {
                 e.preventDefault();
             }
+        });
+
+        // Repeating watermark
+        const watermark = document.getElementById('watermarkOverlay');
+        const label = '@User.Identity!.Name';
+        for (let i = 0; i < 24; i++) {
+            const span = document.createElement('span');
+            span.textContent = label;
+            watermark.appendChild(span);
+        }
+
+        // Reading progress bar
+        const progressBar = document.getElementById('readingProgressBar');
+        window.addEventListener('scroll', function () {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            progressBar.style.width = pct + '%';
+        });
+
+        // Font size controls
+        const readerText = document.getElementById('readerText');
+        let fontSize = 1.1;
+        document.getElementById('fontIncrease')?.addEventListener('click', function () {
+            if (!readerText) return;
+            fontSize = Math.min(fontSize + 0.1, 1.8);
+            readerText.style.fontSize = fontSize + 'rem';
+        });
+        document.getElementById('fontDecrease')?.addEventListener('click', function () {
+            if (!readerText) return;
+            fontSize = Math.max(fontSize - 0.1, 0.8);
+            readerText.style.fontSize = fontSize + 'rem';
+        });
+
+        // Back to top
+        document.getElementById('backToTop').addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     </script>
 }
